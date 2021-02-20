@@ -1,0 +1,15 @@
+#!/usr/bin/env bash
+
+domain="${1}"
+if [[ -z "${domain}" ]]; then
+    echo "Usage: $(basename $0) DOMAIN"
+    echo "Display basic certificate information from a domain"
+    exit 1
+fi
+openssl x509 -in <(openssl s_client -connect "${domain/#https:\/\//}:443" -prexit 2>/dev/null) -issuer -subject -enddate -fingerprint -noout -ext subjectAltName \
+    | sed -e '/^X509v3 Subject Alternative Name/d' \
+          -e 's/^notAfter/expire/' \
+          -e 's/^SHA1 Fingerprint/sha1/' \
+          -e 's/^\s\s*/alt=/' \
+          -e 's/=/\t/' 
+

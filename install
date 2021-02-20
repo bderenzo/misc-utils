@@ -1,0 +1,8 @@
+#!/usr/bin/env bash 
+
+LOCAL_BIN_DIR='/usr/local/bin'
+for bin in bin/*; do 
+    echo "install $(basename ${bin})..."
+    install -m 755 -o root "${bin}"  "${LOCAL_BIN_DIR}/"
+done
+

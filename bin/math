@@ -1,0 +1,19 @@
+#!/usr/bin/env bash
+
+if [[ -z "${1}" ]]; then
+    echo "Usage: $(basename "$0") EXPR"
+    echo 'Minimal calculator'
+    exit 1
+fi
+awk "function cosd(x, pi)     { pi=atan2(0,-1); return cos(x*pi/180.) } \
+     function sind(x, pi)     { pi=atan2(0,-1); return sin(x*pi/180.) } \
+     function log10(x)        { return log(x)/log(10) } \
+     function abs(x)          { if(x>=0){ return x } else { return -x } } \
+     function floor(x)        { return int(x) } \
+     function asin(x)         { return atan2(x,(1.-x^2)^0.5) } \
+     function acos(x)         { return atan2((1.-x^2)^0.5,x) } \
+     function atan(x)         { return atan2(x,1) } \
+     function tan(x)          { return sin(x)/cos(x) } \
+     function nint(x,y,sign)  { if(x==0){return 0}; y=abs(x); sign=x/y; return sign*int(y+0.5) } \
+     BEGIN { printf(\"%.20f\n\",${1}) }" | sed -e 's,0*$,,' -e 's,\.$,,'
+

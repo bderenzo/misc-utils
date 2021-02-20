@@ -1,0 +1,30 @@
+#!/usr/bin/env bash        
+
+if [[ -z "${1}" ]]; then
+    echo "Usage: $(basename "$0") FILE [FILE ...]"
+    echo 'Mutliple grouped tailf'
+    exit 1
+fi
+
+# print with a fixed width 
+_p(){ (( ${#2} > $1 )) && echo -n "${2:0:$1}." || printf "%-${1}s" "${2}"; }
+
+# allow killing
+trap 'kill $(jobs -p) &> /dev/null' SIGHUP SIGINT SIGTERM;
+
+# get longest filename
+maxlen=0
+for F in "${@}"; do
+    len="$(echo "$(basename "${F}")" | wc -c)"
+    (( maxlen < len )) && maxlen="${len}"
+done
+
+# tailling files
+for F in "$@"; do
+    echo "+ ${F}..."
+    tail -n 0 -f $F | while read -r line; do
+        echo "$(_p ${maxlen} "$(basename "${F}")")| ${line}" 
+    done &
+done
+wait
+

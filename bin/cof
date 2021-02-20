@@ -1,0 +1,15 @@
+#!/usr/bin/env bash
+
+if [ -z "${1}" ]; then
+    echo "Usage: compress $(basename $0) FILE [FILE ...]"
+    echo "     decompress $(basename $0) -d"
+    echo 'Generate base64 encoded archive for copy and paste data'
+    exit 1
+elif ! [ "${1}" == '-d' ]; then
+    tar -cJf - "${@}" | base64
+else
+    echo 'Paste 64bits encoded data, CTRL+D x2'
+    base64 -d | tar -xJ
+    echo
+fi
+
