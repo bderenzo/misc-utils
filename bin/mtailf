@@ -1,8 +1,8 @@
 #!/usr/bin/env bash        
 
 if [[ -z "${1}" ]]; then
-    echo "Usage: $(basename "$0") FILE [FILE ...]"
-    echo 'Mutliple grouped tailf'
+    echo >&2 "Usage: $(basename "$0") FILE [FILE ...]"
+    echo >&2 'Mutliple grouped tailf'
     exit 1
 fi
 

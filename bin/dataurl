@@ -1,8 +1,8 @@
 #!/usr/bin/env bash
 
 if [[ -z "${1}" ]]; then
-    echo "Usage: $(basename "$0") FILE"
-    echo 'Convert a file into a base64 encoded url'
+    echo >&2 "Usage: $(basename "$0") FILE"
+    echo >&2 'Convert a file into a base64 encoded url'
     exit 1
 fi
 

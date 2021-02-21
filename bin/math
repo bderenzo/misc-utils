@@ -1,8 +1,8 @@
 #!/usr/bin/env bash
 
 if [[ -z "${1}" ]]; then
-    echo "Usage: $(basename "$0") EXPR"
-    echo 'Minimal calculator'
+    echo >&2 "Usage: $(basename "$0") EXPR"
+    echo >&2 'Minimal calculator'
     exit 1
 fi
 awk "function cosd(x, pi)     { pi=atan2(0,-1); return cos(x*pi/180.) } \

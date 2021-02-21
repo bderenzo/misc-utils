@@ -5,7 +5,7 @@ set -eu
 # USAGE: vimv [file1 file2]
 # adapted from https://github.com/thameera/vimv
 
-declare -r FILENAMES_FILE=$(mktemp "${TMPDIR:-/tmp}/vimv.XXX")
+FILENAMES_FILE=$(mktemp "${TMPDIR:-/tmp}/vimv.XXX")
 
 trap '{ rm -f "${FILENAMES_FILE}" ; }' EXIT
 
@@ -22,14 +22,15 @@ done
 checksum1="$(md5sum "${FILENAMES_FILE}")"
 ${EDITOR:-vi} "${FILENAMES_FILE}"
 checksum2="$(md5sum "${FILENAMES_FILE}")"
+
 if [[ "${checksum1}" == "${checksum2}" ]]; then
     echo "nothing to do"
-    exit 2
+    exit 0
 fi
 
 IFS=$'\r\n' GLOBIGNORE='*' command eval 'dest=($(cat "${FILENAMES_FILE}"))'
 if [[ "${#src[@]}" != "${#dest[@]}" ]]; then
-    echo "error: source and destination number of files differs"
+    echo >&2 "error: source and destination number of files differs"
     exit 1
 fi
 

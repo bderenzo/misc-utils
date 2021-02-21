@@ -2,8 +2,8 @@
 
 domain="${1}"
 if [[ -z "${domain}" ]]; then
-    echo "Usage: $(basename $0) DOMAIN"
-    echo "Display basic certificate information from a domain"
+    echo >&2 "Usage: $(basename $0) DOMAIN"
+    echo >&2 "Display basic certificate information from a domain"
     exit 1
 fi
 openssl x509 -in <(openssl s_client -connect "${domain/#https:\/\//}:443" -prexit 2>/dev/null) -issuer -subject -enddate -fingerprint -noout -ext subjectAltName \

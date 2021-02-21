@@ -10,5 +10,6 @@
 * `httpstatus` - Display http(s) status code from an url
 * `math` - Minimal calculator
 * `mtailf` - Multiple grouped tailf
+* `nth` - Display Nth element of each line
 * `pwgen` - Minimal password generator
 

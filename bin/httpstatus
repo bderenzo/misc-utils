@@ -1,8 +1,8 @@
 #!/usr/bin/env bash
 
 if [ -z "${1}" ]; then
-    echo "Usage: $(basename $0) URL"
-    echo 'Display http(s) status code from an url'
+    echo >&2 "Usage: $(basename $0) URL"
+    echo >&2 'Display http(s) status code from an url'
     exit 1
 fi
 wget --spider -S "${1}" 2>&1 | grep "HTTP/" | grep -o '[0-9][0-9][0-9]' | tail -n1

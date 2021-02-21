@@ -2,20 +2,22 @@
 
 archive="${1}"
 if [ -z "$1" ]; then
-    echo "Usage: $(basename $0) ARCHIVE"
-    echo 'Archive decompression utility'
-    echo 'Supported format: zip|rar|bz2|gz|tar|tbz2|tgz|Z|7z|xz|ex|tar.bz2|tbz2|tar.gz|tgz|tar.xz'
+    echo >&2 "Usage: $(basename $0) ARCHIVE"
+    echo >&2 'Archive decompression utility'
+    echo >&2 'Supported format: zip|rar|bz2|gz|tar|tbz2|tgz|Z|7z|xz|ex|tar.bz2|tbz2|tar.gz|tgz|tar.xz'
     exit 1
 elif ! [ -f "${archive}" ]; then
-    echo "'${archive}' file does not exist"
+    echo >&2 "'${archive}' file does not exist"
     exit 2
 fi
-# always extract in a subdirectory
+
 name="$(echo "${archive}" | sed -E 's,\.(zip|rar|bz2|gz|tar|tbz2|tgz|Z|7z|xz|ex|tar.bz2|tbz2|tar.gz|tgz|tar.xz)$,,')"
 if [ -d ${name} ]; then
-    echo "'${name}' direcotry already exist"
+    echo >&2 "'${name}' direcotry already exist"
     exit 3
 fi
+
+# always extract in a subdirectory
 mkdir "${name}"
 cd "${name}" || exit 1
 mv ../"${archive}" .
@@ -33,16 +35,10 @@ case "${archive}" in
         *.Z)              uncompress   ./"${archive}" ;;
         *.xz)             unxz         ./"${archive}" ;;
         *.exe)            cabextract   ./"${archive}" ;;
-        *)                echo "'${archive}' unknown archive method" ;;
+        *)                echo >&2 "'${archive}' unknown archive method"; exit 1 ;;
 esac
 rc=$?
 if [[ "${rc}" == '0' ]]; then 
     rm "${archive}"
 fi
-#if [[ "$(ls -1AF | grep -c '/$')" == '1' ]]; then
-#    for x in "${name}"/* "${name}"/.[!.]* "${name}"/..?*; do
-#        [ -e "$x" ] &&  mv -- "$x" ./
-#    done
-#    rmdir "${name}"
-#fi
 

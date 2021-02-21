@@ -1,11 +1,11 @@
 #!/usr/bin/env bash        
 
-if [[ $# -eq 0 ]]; then
-    echo "Usage: $(basename $0) [COLOR] PATTERN"
-    echo 'Highlight words in a text'
+if [[ "$#" == '0' ]]; then
+    echo >&2 "Usage: $(basename "$0") [COLOR] PATTERN"
+    echo >&2 'Highlight words in a text'
     exit 1
 fi
-if [[ $# -lt 2 ]]; then
+if (( "$#" < 2 )); then
     grep --color=auto -E "$1|" && exit
 fi
 declare -A fg_color_map
