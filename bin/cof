@@ -6,9 +6,12 @@ if [ -z "${1}" ]; then
     echo 'Generate base64 encoded archive for copy and paste data'
     exit 1
 elif ! [ "${1}" == '-d' ]; then
+    echo "Copy 64bits encoded data, run $(basename "$0") -d"
+    echo
     tar -cJf - "${@}" | base64
 else
     echo 'Paste 64bits encoded data, CTRL+D x2'
+    echo
     base64 -d | tar -xJ
     echo
 fi
