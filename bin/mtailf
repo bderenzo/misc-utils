@@ -10,7 +10,7 @@ fi
 _p(){ (( ${#2} > $1 )) && echo -n "${2:0:$1}." || printf "%-${1}s" "${2}"; }
 
 # allow killing
-trap 'kill $(jobs -p) &> /dev/null' SIGHUP SIGINT SIGTERM;
+trap 'kill $(jobs -p) &> /dev/null' SIGHUP SIGINT SIGTERM
 
 # get longest filename
 maxlen=0

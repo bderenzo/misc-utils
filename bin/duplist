@@ -1,0 +1,9 @@
+#!/usr/bin/env bash
+
+if [[ "$#" == '0' ]]; then
+    echo >&2 "Usage: $(basename $0) DIR [DIR ...]"
+    echo >&2 "Find duplicate files in directories"
+    exit 1
+fi
+find "${@}" ! -empty -type f -exec md5sum {} + | sort | uniq -dw32 --all-repeated=separate
+
