@@ -1,0 +1,31 @@
+#!/usr/bin/env bash
+
+# check required package
+if ! command -v python3 2>&1 >/dev/null; then
+    echo "Error: python3 is required"
+    exit 1
+fi
+
+usage(){
+    echo "Usage: $(basename "$0") [-b HOST] [-p PORT] [-d DIR]"
+    echo 'Small http server'
+    exit 0
+}
+
+# default values
+host='127.0.0.1' port='8888' dir='./'
+
+while :; do
+    case "${1}" in
+        -p|--port)  port="${2}"; shift;;
+        -b|--bind)  host="${2}"; shift;;
+        -d|--dir)   dir="${2}"; shift;;
+        -h|--help)  usage;;
+        *)          break;;
+    esac
+    shift
+done
+
+echo "Serve ${dir} on ${host}:${port}"
+python3 -m http.server "${port}" --bind "${host}" --directory "${dir}" 2>&1 >/dev/null
+

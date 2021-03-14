@@ -13,4 +13,5 @@
 * `mtailf` - Multiple grouped tailf
 * `nth` - Display Nth element of each line
 * `pwgen` - Minimal password generator
+* `serve` - Small http server
 
