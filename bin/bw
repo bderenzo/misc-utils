@@ -8,8 +8,8 @@ if [[ -z "${dev}" ]]; then
     exit 1
 elif ! grep -q "^ *${dev}:" /proc/net/dev; then
     echo >&2 "error: device '${dev}' not found"
-    #echo "avalaible devices:"
-    #grep ':' /proc/net/dev | awk -F: '{print $1}' | sed 's,^\s*,- ,'
+    echo "avalaible devices:"
+    grep ':' /proc/net/dev | awk -F: '{print $1}' | sed 's,^\s*,+ ,'
     exit 2
 fi
 
@@ -19,7 +19,7 @@ get_out_bytes(){ awk '/^ *'${1}':/ { print $10 } ' /proc/net/dev; }
 
 while sleep 1; do
     rx=$(get_in_bytes "${dev}") tx=$(get_out_bytes "${dev}")
-    awk "BEGIN { printf(\"\033[K\r${dev}: Rx %.2f Mb/s | Tx %.2f Mb/s | All %.2f Mb/s \", \
+    awk "BEGIN { printf(\"\033[K\r${dev}: Rx %.2f MB/s | Tx %.2f MB/s | All %.2f MB/s \", \
         (${rx}-${rxo:-$rx})/1048576, \
         (${tx}-${txo:-$tx})/1048576, \
         (${tx}+${rx}-${txo:-$tx}-${rxo:-$rx})/1048576 ) }"
