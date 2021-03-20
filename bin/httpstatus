@@ -1,9 +1,18 @@
 #!/usr/bin/env bash
 
+# check required package
+if ! command -v curl >/dev/null 2>&1; then
+    echo "Error: curl is required"
+    exit 1
+fi
+
 if [ -z "${1}" ]; then
     echo >&2 "Usage: $(basename $0) URL"
     echo >&2 'Display http(s) status code from an url'
     exit 1
 fi
-wget --spider -S "${1}" 2>&1 | grep "HTTP/" | grep -o '[0-9][0-9][0-9]' | tail -n1
+
+useragent="User-Agent: Mozilla/5.0 (Macintosh; Intel Mac OS X 10_13_1) "
+useragent="${useragent}AppleWebKit/537.36 (K HTML, like Gecko) Chrome/61.0.3163.100 Safari/537.36"
+curl -skLo /dev/null -H "${useragent}" -w "%{http_code}\n" "${1}"
 
