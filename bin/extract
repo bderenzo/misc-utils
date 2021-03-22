@@ -1,4 +1,4 @@
-#!/usr/bin/env bash
+#!/usr/bin/env sh
 
 archive="${1}"
 if [ -z "${1}" ]; then
@@ -13,8 +13,8 @@ fi
 
 # get archive name
 name="$(echo "${archive}" | sed -E 's,\.(zip|rar|bz2|gz|tar|tbz2|tgz|Z|7z|xz|ex|tar.bz2|tbz2|tar.gz|tgz|tar.xz)$,,')"
-if [ -d ${name} ]; then
-    echo >&2 "'${name}' direcotry already exist"
+if [ -e ${name} ]; then
+    echo >&2 "'${name}' file or direcotry already exist"
     exit 3
 fi
 
@@ -39,7 +39,7 @@ case "${archive}" in
         *)                echo >&2 "'${archive}' unknown archive method"; exit 1 ;;
 esac
 rc=$?
-if [[ "${rc}" == '0' ]]; then 
+if [[ "${rc}" == '0' ]]; then
     rm "${archive}"
 fi
 

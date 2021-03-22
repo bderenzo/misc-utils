@@ -1,16 +1,16 @@
-#!/usr/bin/env bash 
+#!/usr/bin/env sh
 
-if [[ "${EUID}" != '0' ]]; then
+if [ "$(id -u)" != '0' ]; then
     echo >&2 'Only root can do that'
     exit 1
 fi
 
 LOCAL_BIN_DIR='/usr/local/bin'
 
-echo "install..."
+echo "Install..."
 for bin in bin/*; do 
-    echo "+ $(basename ${bin})"
+    echo "+ $(basename "${bin}")"
     install -m 755 -o root "${bin}" "${LOCAL_BIN_DIR}/"
 done
-echo "done"
+echo "Done."
 

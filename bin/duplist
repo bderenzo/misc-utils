@@ -1,10 +1,15 @@
-#!/usr/bin/env bash
+#!/usr/bin/env sh
 
-if [[ "$#" == '0' ]]; then
+if [ "$#" -eq '0' ]; then
     echo >&2 "Usage: $(basename "${0}") DIR [DIR ...]"
     echo >&2 "Find duplicate files in directories"
     exit 1
 fi
 
-find "${@}" ! -empty -type f -exec md5sum {} + | sort | uniq -dw32 --all-repeated=separate
+find "${@}" ! -empty -type f -exec md5sum {} + | sort | awk '
+{
+  if      (h==$1) { print l;     m=1 } # current  hash match,   print previous line
+  else if (m==1)  { print l"\n"; m=0 } # previous hash matched, print previous line
+  l=$0; h=$1                           # store line and hash
+}'
 

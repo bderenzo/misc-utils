@@ -1,4 +1,4 @@
-#!/usr/bin/env bash
+#!/usr/bin/env sh
 
 # check required package
 if ! command -v python3 2>&1 >/dev/null; then

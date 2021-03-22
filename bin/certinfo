@@ -1,16 +1,23 @@
-#!/usr/bin/env bash
+#!/usr/bin/env sh
 
-domain="${1}"
-if [[ -z "${domain}" ]]; then
+# check required package
+if ! command -v openssl 2>&1 >/dev/null; then
+    echo "Error: openssl is required"
+    exit 1
+fi
+
+domain="$(echo "${1}" | sed 's,^https://,,')"
+if [ -z "${domain}" ]; then
     echo >&2 "Usage: $(basename "${0}") DOMAIN"
     echo >&2 "Display basic certificate information from a domain"
     exit 1
 fi
 
-openssl x509 -in <(openssl s_client -connect "${domain/#https:\/\//}:443" -prexit 2>/dev/null) -issuer -subject -enddate -fingerprint -noout -ext subjectAltName \
-    | sed -e '/^X509v3 Subject Alternative Name/d' \
+echo | openssl s_client -connect "${domain}:443" -prexit 2>/dev/null \
+     | openssl x509 -issuer -subject -enddate -fingerprint -noout -ext subjectAltName \
+     | sed -e '/^X509v3 Subject Alternative Name/d' \
           -e 's/^notAfter/expire/' \
           -e 's/^SHA1 Fingerprint/sha1/' \
           -e 's/^\s\s*/alt=/' \
-          -e 's/=/\t/' 
+          -e 's/=/\t/'
 
