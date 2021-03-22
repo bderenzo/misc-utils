@@ -1,10 +1,11 @@
 #!/usr/bin/env bash
 
 if [[ -z "${1}" ]]; then
-    echo >&2 "Usage: $(basename "$0") EXPR"
+    echo >&2 "Usage: $(basename "${0}") EXPR"
     echo >&2 'Minimal calculator'
     exit 1
 fi
+
 awk "function cosd(x, pi)     { pi=atan2(0,-1); return cos(x*pi/180.) } \
      function sind(x, pi)     { pi=atan2(0,-1); return sin(x*pi/180.) } \
      function log10(x)        { return log(x)/log(10) } \

@@ -7,13 +7,13 @@ if ! command -v python3 2>&1 >/dev/null; then
 fi
 
 usage(){
-    echo "Usage: $(basename "$0") [-b HOST] [-p PORT] [-d DIR]"
+    echo "Usage: $(basename "${0}") [-b HOST] [-p PORT] [-d DIR]"
     echo 'Small http server'
     exit 0
 }
 
 # default values
-host='127.0.0.1' port='8888' dir='./'
+host='0.0.0.0' port='8888' dir='./'
 
 while :; do
     case "${1}" in

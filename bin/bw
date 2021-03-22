@@ -3,12 +3,12 @@
 
 dev="$1"
 if [[ -z "${dev}" ]]; then
-    echo >&2 "Usage: $(basename $0) INTERFACE"
+    echo >&2 "Usage: $(basename "${0}") INTERFACE"
     echo >&2 "Display bandwith (up and down) for an interface"
     exit 1
 elif ! grep -q "^ *${dev}:" /proc/net/dev; then
-    echo >&2 "error: device '${dev}' not found"
-    echo "avalaible devices:"
+    echo >&2 "Error: device '${dev}' not found"
+    echo 'Avalaible device(s):'
     grep ':' /proc/net/dev | awk -F: '{print $1}' | sed 's,^\s*,+ ,'
     exit 2
 fi

@@ -1,9 +1,9 @@
 #!/usr/bin/env bash
 
 usage(){
-    echo "Usage: $(basename "$0") [-n LENGTH] [-u] [-l] [-d] [-s]"
+    echo "Usage: $(basename "${0}") [-n LENGTH] [-u] [-l] [-d] [-s]"
     echo 'Minimal password generator'
-    exit 0
+    exit "${1}"
 }
 while [ -n "${1}" ]; do
     case "${1}" in
@@ -12,7 +12,8 @@ while [ -n "${1}" ]; do
         -l|--lower)    cx="${cx}a-z";;
         -d|--digit)    cx="${cx}0-9";;
         -s|--special)  cx="${cx}().,;:!@#$%+*/<>{}~_-";;
-        -h|--help)     usage;;
+        -h|--help)     usage 0;;
+        *)             echo "illegal option ${1}"; usage 1;;
     esac
     shift
 done

@@ -1,8 +1,8 @@
 #!/usr/bin/env bash
 
 if [ -z "${1}" ]; then
-    echo >&2 "Usage: (compress) $(basename $0) FILE [FILE ...]"
-    echo >&2 "     (decompress) $(basename $0) -d"
+    echo >&2 "Usage: (compress) $(basename "${0}") FILE [FILE ...]"
+    echo >&2 "     (decompress) $(basename "${0}") -d"
     echo >&2 'Generate base64 encoded archive for copy and paste data'
     exit 1
 elif ! [ "${1}" == '-d' ]; then

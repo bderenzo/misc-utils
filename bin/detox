@@ -1,14 +1,16 @@
 #!/usr/bin/env bash
 
 if [[ -z "${1}" ]]; then
-    echo >&2 "Usage: $(basename $0) [-n|--dry-run] FILE|DIR [FILE|DIR...]"
+    echo >&2 "Usage: $(basename "${0}") [-n|--dry-run] FILE|DIR [FILE|DIR...]"
     echo >&2 "Rename files and directories without special characters"
     exit 1
 fi
+
 dry=false
 if [[ "${1}" == '-n' ]] || [[ "${1}" == '--dry-run' ]]; then
     dry=true && shift
 fi
+
 accent='çāáǎàēéěèêïîīíǐìôōóǒòûūúǔùǖǘǚǜĀÁǍÀĒÉĚÈĪÍǏÌŌÓǑÒŪÚǓÙǕǗǙǛ'
 normal='caaaaeeeeeiiiiiiooooouuuuuuuuuAAAAEEEEIIIIOOOOUUUUUUUU'
 for e in "$@"; do

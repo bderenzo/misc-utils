@@ -2,10 +2,11 @@
 
 domain="${1}"
 if [[ -z "${domain}" ]]; then
-    echo >&2 "Usage: $(basename $0) DOMAIN"
+    echo >&2 "Usage: $(basename "${0}") DOMAIN"
     echo >&2 "Display basic certificate information from a domain"
     exit 1
 fi
+
 openssl x509 -in <(openssl s_client -connect "${domain/#https:\/\//}:443" -prexit 2>/dev/null) -issuer -subject -enddate -fingerprint -noout -ext subjectAltName \
     | sed -e '/^X509v3 Subject Alternative Name/d' \
           -e 's/^notAfter/expire/' \

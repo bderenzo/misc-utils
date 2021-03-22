@@ -1,8 +1,8 @@
 #!/usr/bin/env bash
 
 archive="${1}"
-if [ -z "$1" ]; then
-    echo >&2 "Usage: $(basename $0) ARCHIVE"
+if [ -z "${1}" ]; then
+    echo >&2 "Usage: $(basename "${0}") ARCHIVE"
     echo >&2 'Archive decompression utility'
     echo >&2 'Supported format: zip|rar|bz2|gz|tar|tbz2|tgz|Z|7z|xz|ex|tar.bz2|tbz2|tar.gz|tgz|tar.xz'
     exit 1
@@ -11,13 +11,14 @@ elif ! [ -f "${archive}" ]; then
     exit 2
 fi
 
+# get archive name
 name="$(echo "${archive}" | sed -E 's,\.(zip|rar|bz2|gz|tar|tbz2|tgz|Z|7z|xz|ex|tar.bz2|tbz2|tar.gz|tgz|tar.xz)$,,')"
 if [ -d ${name} ]; then
     echo >&2 "'${name}' direcotry already exist"
     exit 3
 fi
 
-# always extract in a subdirectory
+# extract in a subdirectory
 mkdir "${name}"
 cd "${name}" || exit 1
 mv ../"${archive}" .
