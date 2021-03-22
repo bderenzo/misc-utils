@@ -12,6 +12,7 @@
 * `math` - Minimal calculator
 * `mtailf` - Multiple grouped tailf
 * `nth` - Display Nth element of each line
+* `parassh` - Parallel SSH command execution
 * `pwgen` - Minimal password generator
 * `serve` - Small http server
 
