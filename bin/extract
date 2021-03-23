@@ -4,7 +4,7 @@ archive="${1}"
 if [ -z "${1}" ]; then
     echo >&2 "Usage: $(basename "${0}") ARCHIVE"
     echo >&2 'Archive decompression utility'
-    echo >&2 'Supported format: zip|rar|bz2|gz|tar|tbz2|tgz|Z|7z|xz|ex|tar.bz2|tbz2|tar.gz|tgz|tar.xz'
+    echo >&2 'Supported format: zip|7z|rar|gz|bz2|xz|lzma|tar|tar.gz|tar.bz2|tar.xz|Z|exe'
     exit 1
 elif ! [ -f "${archive}" ]; then
     echo >&2 "'${archive}' file does not exist"
@@ -12,7 +12,7 @@ elif ! [ -f "${archive}" ]; then
 fi
 
 # get archive name
-name="$(echo "${archive}" | sed -E 's,\.(zip|rar|bz2|gz|tar|tbz2|tgz|Z|7z|xz|ex|tar.bz2|tbz2|tar.gz|tgz|tar.xz)$,,')"
+name="$(echo "${archive}" | sed -E 's,\.(zip|7z|rar|gz|bz2|xz|lzma|tar|tar.gz|tar.bz2|tar.xz|Z|exe)$,,')"
 if [ -e ${name} ]; then
     echo >&2 "'${name}' file or direcotry already exist"
     exit 3
@@ -24,17 +24,17 @@ cd "${name}" || exit 1
 mv ../"${archive}" .
 case "${archive}" in
         *.tar)            tar -xvf     ./"${archive}" ;;
-        *.tar.bz2|*.tbz2) tar -xvjf    ./"${archive}" ;;
         *.tar.gz|*.tgz)   tar -xvzf    ./"${archive}" ;;
-        *.tar.xz)         tar -xvJf    ./"${archive}" ;;
+        *.tar.bz2|*.tbz2) tar -xvjf    ./"${archive}" ;;
+        *.tar.xz|*.txz)   tar -xvJf    ./"${archive}" ;;
         *.zip)            unzip        ./"${archive}" ;;
-        *.rar)            unrar x -ad  ./"${archive}" ;;
         *.7z)             7z x         ./"${archive}" ;;
-        *.lzma)           unlzma       ./"${archive}" ;;
-        *.bz2)            bunzip2      ./"${archive}" ;;
+        *.rar)            unrar x -ad  ./"${archive}" ;;
         *.gz)             gunzip       ./"${archive}" ;;
-        *.Z)              uncompress   ./"${archive}" ;;
+        *.bz2)            bunzip2      ./"${archive}" ;;
         *.xz)             unxz         ./"${archive}" ;;
+        *.lzma)           unlzma       ./"${archive}" ;;
+        *.Z)              uncompress   ./"${archive}" ;;
         *.exe)            cabextract   ./"${archive}" ;;
         *)                echo >&2 "'${archive}' unknown archive method"; exit 1 ;;
 esac

@@ -6,7 +6,7 @@
 * `dataurl` - Convert a file into a base64 encoded url
 * `detox` - Rename files and directories without special characters
 * `duplist` - Find duplicate files in directories
-* `extract` - Archive decompression utility, support: zip, rar, bz2, gz, tar, tbz2, tgz, Z, 7z, xz, ex, tar.bz2, tbz2, tar.gz, tgz, tar.xz
+* `extract` - Archive decompression utility, support: zip, gz, bz2, xz, 7z, tar.gz, tar.bz2, tar.xz, rar, ...
 * `hgh` - Highlight words in a text
 * `httpstatus` - Display http(s) status code from an url
 * `math` - Minimal calculator
