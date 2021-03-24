@@ -1,0 +1,21 @@
+#!/usr/bin/env sh
+
+if [ "$#" -lt '2' ]; then
+    echo >&2 "Usage: $(basename "${0}") DIR COMMAND"
+    echo >&2 "Execute a command when directory change"
+    exit 1
+fi
+
+dir="${1}"
+shift
+h1="$(find "${dir}" -printf '%t' 2>/dev/null | md5sum)"
+while :; do
+    h2="$(find "${dir}" -printf '%t' 2>/dev/null | md5sum)"
+    if [ "${h1}" != "${h2}" ]; then
+        date +"%Y/%m/%d %H:%M:%S:"
+    	"${@}"
+    	h1="${h2}"
+    fi
+    sleep 1
+done
+

@@ -1,4 +1,4 @@
-#!/usr/bin/env bash        
+#!/usr/bin/env bash
 
 if [[ -z "${1}" ]]; then
     echo >&2 "Usage: $(basename "${0}") FILE [FILE ...]"
@@ -6,7 +6,7 @@ if [[ -z "${1}" ]]; then
     exit 1
 fi
 
-# print with a fixed width 
+# print with a fixed width
 _p(){ (( ${#2} > $1 )) && echo -n "${2:0:$1}." || printf "%-${1}s" "${2}"; }
 
 # kill on signal
@@ -23,7 +23,7 @@ done
 for F in "${@}"; do
     echo "+ ${F}..."
     tail -n 0 -f "${F}" | while read -r line; do
-        echo "$(_p "${maxlen}" "$(basename "${F}")")| "${line}"" 
+        echo "$(_p "${maxlen}" "$(basename "${F}")")| "${line}""
     done &
 done
 wait

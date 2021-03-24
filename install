@@ -8,7 +8,7 @@ fi
 LOCAL_BIN_DIR='/usr/local/bin'
 
 echo "Install..."
-for bin in bin/*; do 
+for bin in bin/*; do
     echo "+ $(basename "${bin}")"
     install -m 755 -o root "${bin}" "${LOCAL_BIN_DIR}/"
 done

@@ -1,0 +1,18 @@
+#!/usr/bin/env sh
+
+if [ "$#" -eq '0' ]; then
+    echo >&2 "Usage: $(basename "${0}") FILE [FILE...]"
+    echo >&2 "Strip trailing whitespaces of files"
+    exit 1
+fi
+
+for e in "${@}"; do
+    if [ -f "${e}" ]; then
+        echo "+ ${e}"
+        # print
+        awk '/ +$/ {print $0"."}' "${e}"
+        # replace
+        sed -e 's,\s\s*$,,' -i "${e}"
+    fi
+done
+

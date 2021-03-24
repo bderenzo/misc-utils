@@ -1,5 +1,10 @@
+# misc-utils
+
+A collection of tiny portable shell script utilities.
+
 # Misc Utils
 
+* `bak` - Create a backup of files or directories
 * `bw` - Display bandwith (up and down) for an interface
 * `certinfo` - Display basic certificate information from a domain
 * `cof` - Generate base64 encoded archive for copy and paste data
@@ -10,9 +15,11 @@
 * `hgh` - Highlight words in a text
 * `httpstatus` - Display http(s) status code from an url
 * `math` - Minimal calculator
+* `monitor` - Execute a command when directory change
 * `mtailf` - Multiple grouped tailf
 * `nth` - Display Nth element of each line
 * `parassh` - Parallel SSH command execution
 * `pwgen` - Minimal password generator
 * `serve` - Small http server
+* `stw` - Strip trailing whitespaces of files
 
