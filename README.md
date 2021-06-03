@@ -2,12 +2,12 @@
 
 A collection of tiny portable shell script utilities.
 
-# Misc Utils
+# Binaries
 
 * `bak` - Create a backup of files or directories
+* `bea` - Generate base64 encoded archive for copy and paste data
 * `bw` - Display bandwith (up and down) for an interface
 * `certinfo` - Display basic certificate information from a domain
-* `cof` - Generate base64 encoded archive for copy and paste data
 * `dataurl` - Convert a file into a base64 encoded url
 * `detox` - Rename files and directories without special characters
 * `duplist` - Find duplicate files in directories
