@@ -12,7 +12,7 @@ elif ! [ -f "${archive}" ]; then
 fi
 
 # get archive name
-name="$(echo "${archive}" | sed -E 's,\.(zip|7z|rar|gz|bz2|xz|lzma|tar|tar.gz|tar.bz2|tar.xz|Z|exe)$,,')"
+name="$(echo "${archive}" | sed -E 's,\.(zip|7z|rar|gz|bz2|xz|lzma|tar|tar.gz|tar.bz2|tar.xz|tgz|tbz2|txz|Z|exe)$,,')"
 if [ -e ${name} ]; then
     echo >&2 "'${name}' file or direcotry already exist"
     exit 3
@@ -39,7 +39,7 @@ case "${archive}" in
         *)                echo >&2 "'${archive}' unknown archive method"; exit 1 ;;
 esac
 rc=$?
-if [[ "${rc}" == '0' ]]; then
+if [ "${rc}" -eq 0 ]; then
     rm "${archive}"
 fi
 
