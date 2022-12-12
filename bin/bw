@@ -8,7 +8,7 @@ if [ -z "${dev}" ]; then
 elif ! grep -q "^ *${dev}:" /proc/net/dev; then
     echo >&2 "Error: device ${dev} not found"
     echo 'Avalaible device(s):'
-    grep ':' /proc/net/dev | awk -F: '{print $1}' | sed 's,^\s*,+ ,'
+    awk -F: '/:/ {gsub(/ /,""); print "+ "$1}' /proc/net/dev
     exit 2
 fi
 
