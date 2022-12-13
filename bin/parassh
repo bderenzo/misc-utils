@@ -1,4 +1,4 @@
-#!/bin/sh
+#!/usr/bin/env sh
 
 usage() {
     cat << EOF
@@ -8,19 +8,22 @@ Parallel SSH command execution
 OPTIONS:
    -o --options SSH_OPTS   add ssh option(s)
    -q --quiet              only print results
+   -d --date               print date
    -h --help               show this help
 EOF
-    exit "${1}"
 }
 
+tmpdir="$(mktemp -d)"
+date=false
 quiet=false
 while [ $# != 0 ] ; do
     case "${1}" in
         -o|--ssh-opt)   shift; sshopt="${sshopt} ${1}";;
-        -h|--help)      usage 0;;
+        -h|--help)      usage; exit 0;;
+        -d|--date)      date=true;;
         -q|--quiet)     quiet=true;;
         --)             shift; break;;
-        -*)             echo "unknown ${1} option"; usage 1;;
+        -*)             echo "unknown ${1} option"; usage; exit 1;;
         *)              hosts="${hosts} ${1}";;
     esac
     shift
@@ -31,8 +34,8 @@ n=0
 t0=$(date +%s)
 for h in ${hosts}; do
     n=$((n+1))
-    ssh ${sshopt} ${h} -- "${@}" > "/tmp/parassh_${n}_${h}_${t0}" 2>&1 &
-    state="${state} $!;${h};${n}"
+    ssh ${sshopt} ${h} -- "${@}" > "${tmpdir}/${n}_${h}_${t0}" 2>&1 &
+    state="${state} ${!};${h};${n}"
 done
 
 while [ "${state}" != '' ]; do
@@ -41,15 +44,16 @@ while [ "${state}" != '' ]; do
         if ! ps -o pid "${pid}" >/dev/null 2>&1; then
             h=$(echo $s | cut -d';' -f2)
             i=$(echo $s | cut -d';' -f3)
-            ! ${quiet} && echo ${h} | grep '.*' --color=auto
-            cat /tmp/parassh_${i}* && rm /tmp/parassh_${i}*
+            ${date} && d=" $(date +"%Y/%m/%d @ %H:%M:%S")"
+            ! ${quiet} && echo "${h}${d}" | grep '.*' --color=auto
+            cat ${tmpdir}/${i}_* && rm ${tmpdir}/${i}_*
             state=$(echo "${state}" | sed "s, ${pid};${h};${i},,")
         fi
     done
     sleep 1
 done
+rmdir ${tmpdir}
 if ! ${quiet}; then
     echo
     echo "Total: ${n} host(s), $(( $(date +%s) - t0 )) second(s)"
 fi
-
