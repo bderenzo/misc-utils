@@ -39,6 +39,7 @@ for h in ${hosts}; do
 done
 
 while [ "${state}" != '' ]; do
+    sleep 1
     for s in ${state}; do
         pid=$(echo $s | cut -d';' -f1)
         if ! ps -o pid "${pid}" >/dev/null 2>&1; then
@@ -50,7 +51,6 @@ while [ "${state}" != '' ]; do
             state=$(echo "${state}" | sed "s, ${pid};${h};${i},,")
         fi
     done
-    sleep 1
 done
 rmdir ${tmpdir}
 if ! ${quiet}; then
