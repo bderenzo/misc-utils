@@ -2,17 +2,19 @@
 
 if [ -z "${1}" ]; then
     echo >&2 "Usage: (compress) $(basename "${0}") FILE [FILE ...]"
-    echo >&2 "     (decompress) $(basename "${0}") -d"
+    echo >&2 "     (uncompress) $(basename "${0}") -d"
     echo >&2 'Generate base64 encoded archive for copy and paste data'
     exit 1
-elif ! [ "${1}" = '-d' ]; then
-    echo "Copy 64bits encoded data below, to extract execute: $(basename "$0") -d"
-    echo
-    tar -czf - "${@}" | base64
-else
+elif [ "${1}" = '-p' ]; then
+    echo '  compress: tar -czf - . | base64'
+    echo 'uncompress: base64 -d | tar -xz'
+elif [ "${1}" = '-d' ]; then
     echo 'Paste 64bits encoded data, then press CTRL+D twice'
     echo
     base64 -d | tar -xz
     echo
+else
+    echo "Copy 64bits encoded data below, to extract execute: $(basename "$0") -d"
+    echo
+    tar -czf - "${@}" | base64
 fi
-
