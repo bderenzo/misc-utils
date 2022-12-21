@@ -7,7 +7,7 @@ if [[ -z "${1}" ]]; then
 fi
 
 # print with a fixed width
-_p(){ (( ${#2} > $1 )) && echo -n "${2:0:$1}." || printf "%-${1}s" "${2}"; }
+_p(){ printf "%*.*s" "-${1}" "${1}" "${2}"; }
 
 # kill on signal
 trap 'kill $(jobs -p) &> /dev/null' SIGHUP SIGINT SIGTERM
@@ -15,16 +15,16 @@ trap 'kill $(jobs -p) &> /dev/null' SIGHUP SIGINT SIGTERM
 # get longest filename
 maxlen=0
 for F in "${@}"; do
-    len="$(echo "$(basename "${F}")" | wc -c)"
-    (( maxlen < len )) && maxlen="${len}"
+    len="$(basename "${F}" | wc -c)"
+    (( len > maxlen )) && maxlen="${len}"
 done
 
 # tailling files
 for F in "${@}"; do
-    echo "+ ${F}..."
-    tail -n 0 -f "${F}" | while read -r line; do
-        echo "$(_p "${maxlen}" "$(basename "${F}")")| "${line}""
+    echo "reading ${F}"
+    filename="$(basename "${F}")"
+    tail -n 0 -f "${F}" 2>/dev/null | while read -r line; do
+        echo "$(_p "${maxlen}" "${filename}")| "${line}""
     done &
 done
 wait
-
