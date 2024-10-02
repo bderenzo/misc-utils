@@ -12,7 +12,7 @@ for e in "${@}"; do
     e="$(echo "${e}" | sed 's,/$,,')"
     if [ -f "${e}" -o -d "${e}" ]; then
         echo "+ ${e}"
-        cp -a "${e}" "${e}.${bak}"
+        cp -a "${e}" "${e}.${bak}~"
     else
         echo >&2 "${e} no such file or directory"
         rc="$((rc+1))"
