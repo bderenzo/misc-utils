@@ -1,0 +1,78 @@
+#!/usr/bin/env sh
+
+usage() {
+    cat << EOF
+Usage: ./net [OPTS]
+Tiny network data info viewer
+
+OPTIONS:
+   -o --output FIELDS      comma-separated fields (interface,ip,gateway,mask,cidr,dns,public)
+   -h --help               show this help
+EOF
+}
+
+_public_ip() {
+    if command -v dig >/dev/null 2>&1; then
+        public_ip=$(dig +short @208.67.222.222 myip.opendns.com | tr -d '"')
+    elif command -v curl >/dev/null 2>&1; then
+        public_ip=$(curl --silent --max-time 3 https://api.ipify.org)
+    elif command -v wget >/dev/null 2>&1; then
+        public_ip=$(wget -qO- --timeout=3 https://api.ipify.org)
+    fi
+    echo "${public_ip:-unknown}"
+}
+
+fields=''
+while [ ${#} -gt 0 ]; do
+    case "${1}" in
+        -o|--output)   fields="${2}"; shift 2;;
+        -h|--help)     usage; exit 0;;
+        *)             echo >&2 "Unknown option: ${1}"; usage; exit 1;;
+    esac
+done
+
+read -r _ _ gateway _ iface _ ip _ << EOF
+$(ip route get 1.0.0.0 2>/dev/null)
+EOF
+
+if [ -z "${iface}" ]; then
+    echo >&2 'Error: Could not retrieve network data.'
+    exit 1
+fi
+
+masklen=$(ip -o -f inet addr show dev "${iface}" | awk '/scope global/ {split($4,v,"/"); print v[2]; exit}')
+mask=$(awk -v m="${masklen}" '
+    BEGIN {
+        for (i=0; i<4; i++) {
+            bits = m - i*8
+            if      (bits >= 8) o=255
+            else if (bits <= 0) o=0
+            else                o=256 - 2^(8-bits)
+            printf "%s%d", (i?".":""), o
+        }
+    }'
+)
+dns=$(awk '/^nameserver / {print $2}' /etc/resolv.conf)
+
+
+if [ -z "${fields}" ]; then
+    printf '%-12s %s\n' interface "${iface}" private-ip "${ip}" gateway "${gateway}" mask "${mask}" cidr "${masklen}" dns "${dns}" public-ip "$(_public_ip)"
+    exit 0
+fi
+
+# Process the requested fields
+out=""
+IFS=','
+for field in ${fields}; do
+    case "${field}" in
+        interface) out="${out}${iface} ";;
+        ip)        out="${out}${ip} ";;
+        gateway)   out="${out}${gateway} ";;
+        mask)      out="${out}${mask} ";;
+        cidr)      out="${out}${masklen} ";;
+        dns)       out="${out}${dns} ";;
+        public)    out="${out}$(get_public_ip) ";;
+        *)         echo >&2 "Unknown field: ${field}"; exit 1;;
+    esac
+done
+echo "${out% }"

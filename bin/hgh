@@ -1,12 +1,17 @@
 #!/usr/bin/env sh
 
-if [ "$#" -eq '0' ]; then
-    echo >&2 "Usage: $(basename "${0}") [COLOR] PATTERN"
-    echo >&2 'Highlight words in a text'
-    exit 1
+usage(){
+    echo "Usage: $(basename "${0}") [COLOR] PATTERN"
+    echo 'Highlight words in a text'
+}
+
+if [ ${#} -eq 0 ]; then
+    usage; exit 1
+elif [ "${1}" = '-h' ] || [ "${1}" = '--help' ] ; then
+    usage; exit 0
 fi
 
-if [ "$#" -lt 2 ]; then
+if [ ${#} -lt 2 ]; then
     color=31
     match="${1}"
 else
@@ -21,7 +26,7 @@ else
     esac
     match="${2}"
 fi
-fg_c=$(echo -e "\e[1;${color}m")
-c_rs=$(echo -e "\e[0m")
+fg_c=$(echo "\e[1;${color}m")
+c_rs=$(echo "\e[0m")
 sed "s/${match}/${fg_c}\0${c_rs}/g"
 

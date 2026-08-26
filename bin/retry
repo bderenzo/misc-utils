@@ -1,0 +1,52 @@
+#!/usr/bin/env sh
+# adapted from https://news.ycombinator.com/item?id=30713151
+
+usage() {
+    cat << EOF
+Usage: $(basename "${0}") [OPTS] -- COMMAND
+Retry a command until success
+
+OPTIONS:
+   -a --attempts N         maximum number of attempts [default: 100]
+   -i --interval SEC       wait between each attempt [default: 5s]
+   -b --backoff            enable backoff wait [default: false]
+   -h --help               show this help
+EOF
+}
+
+if [ ${#} -eq 0 ]; then
+    usage; exit 1
+fi
+
+attempt=1
+max_attempts=${ATTEMPTS-100}
+interval=${INTERVAL-5}
+backoff=false
+rc=0
+
+while :; do
+    case "${1}" in
+        -a|--attempts) max_attempts=${2}; shift 2;;
+        -i|--interval) interval=${2}; shift 2;;
+        -b|--backoff)  backoff=true; shift;;
+        -h|--help)     usage; exit 0;;
+        --)            shift; break;;
+        *)             break;;
+    esac
+done
+
+while :; do
+    "${@}"
+    rc=${?}
+    [ ${rc} = 0 ] && exit ${rc}
+    echo "[${attempt}/${max_attempts}] Failure! (rc=${rc}) Retrying in ${interval}s" 1>&2
+    echo ''
+    if [ ${attempt} -lt ${max_attempts} ]; then
+        sleep ${interval}
+        attempt=$(( attempt + 1 ))
+        ${backoff} && interval=$(( interval * 30 / 20 ))
+    else
+        echo >&2 'Last attempt reached'
+        exit ${rc}
+    fi
+done

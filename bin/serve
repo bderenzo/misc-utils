@@ -1,31 +1,28 @@
 #!/usr/bin/env sh
 
+usage(){
+    echo "Usage: $(basename "${0}") [-b HOST] [-p PORT] [-d DIR]"
+    echo 'Tiny http server'
+}
+
 # check required package
 if ! command -v python3 2>&1 >/dev/null; then
     echo >&2 'Error: python3 is required'
     exit 1
 fi
 
-usage(){
-    echo "Usage: $(basename "${0}") [-b HOST] [-p PORT] [-d DIR]"
-    echo 'Small http server'
-    exit 0
-}
-
 # default values
 host='0.0.0.0' port='8888' dir='./'
 
 while :; do
     case "${1}" in
-        -p|--port)  port="${2}"; shift;;
-        -b|--bind)  host="${2}"; shift;;
-        -d|--dir)   dir="${2}"; shift;;
-        -h|--help)  usage;;
+        -p|--port)  port="${2}"; shift 2;;
+        -b|--bind)  host="${2}"; shift 2;;
+        -d|--dir)   dir="${2}"; shift 2;;
+        -h|--help)  usage; exit 0;;
         *)          break;;
     esac
-    shift
 done
 
 echo "Serve ${dir} on ${host}:${port}"
 python3 -m http.server "${port}" --bind "${host}" --directory "${dir}" 2>&1 >/dev/null
-

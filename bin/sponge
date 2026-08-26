@@ -1,0 +1,20 @@
+#!/usr/bin/env sh
+set -eu
+
+usage() {
+    echo "Usage: $(basename "${0}") FILE"
+    echo 'Soak up standard input and write to a file'
+}
+
+if [ ${#} -ne 1 ]; then
+    usage; exit 1
+elif [ "${1}" = '-h' ] || [ "${1}" = '--help' ] ; then
+    usage; exit 0
+fi
+
+outfile="${1}"
+tmpfile=$(mktemp "${TMPDIR:-/tmp}/sponge.XXX")
+trap 'rm -f "${tmpfile}"' EXIT INT TERM
+
+cat > "${tmpfile}"
+mv "${tmpfile}" "${outfile}"

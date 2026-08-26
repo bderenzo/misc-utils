@@ -1,0 +1,32 @@
+#!/usr/bin/env sh
+set -eu
+
+usage(){
+    echo "Usage: $(basename "${0}") [OPTIONS] [FILE...]"
+    echo 'Strip terminal control sequences from text'
+}
+
+if [ "${1}" = '-h' ] || [ "${1}" = '--help' ] ; then
+    usage; exit 0
+fi
+
+
+ESC=$(printf '\033')
+CR=$(printf '\r')
+NL='
+'
+
+sed -E "
+    s/${CR}/\\
+/g;
+    s/(\\\\r)/\\
+/g;
+
+    s/(${ESC}\[(H|2J|3J|K))+/\\
+/g;
+    s/((\\\x1b|\\033|\\\\e)\[(H|2J|3J|K))+/\\
+/g;
+
+    s/${ESC}\[[0-9;?]*[[:alpha:]]//g;
+    s/(\\\x1b|\\033|\\\\e)\[[0-9;?]*[[:alpha:]]//g;
+" "${@}"

@@ -1,22 +1,27 @@
 #!/usr/bin/env sh
 
-if [ "$#" -eq '0' ]; then
-    echo >&2 "Usage: $(basename "${0}") FILE|DIR [FILE|DIR ...]"
-    echo >&2 "Create a backup of files or directories"
-    exit 1
+usage(){
+    echo "Usage: $(basename "${0}") FILE|DIR [FILE|DIR ...]"
+    echo "Create a backup of files or directories"
+}
+
+if [ ${#} -eq 0 ]; then
+    usage; exit 1
+elif [ "${1}" = '-h' ] || [ "${1}" = '--help' ] ; then
+    usage; exit 0
 fi
 
 rc=0
 bak="$(date +"%Y%m%d-%H%M%S")"
 for e in "${@}"; do
-    e="$(echo "${e}" | sed 's,/$,,')"
+    e="${e%/}"
     if [ -f "${e}" -o -d "${e}" ]; then
         echo "+ ${e}"
-        cp -a "${e}" "${e}.${bak}~"
+        cp -a "${e}" "${e}.${bak}~" || rc=$((rc + 1))
     else
         echo >&2 "${e} no such file or directory"
-        rc="$((rc+1))"
+        rc="$((rc + 1))"
     fi
 done
-exit "${rc}"
 
+exit "${rc}"

@@ -1,9 +1,14 @@
 #!/usr/bin/env sh
 
-if [ "$#" -eq '0' ]; then
-    echo >&2 "Usage: $(basename "${0}") DIR [DIR ...]"
-    echo >&2 "Find duplicate files in directories"
-    exit 1
+usage(){
+    echo "Usage: $(basename "${0}") DIR [DIR ...]"
+    echo 'Find duplicate files in directories'
+}
+
+if [ ${#} -eq 0 ]; then
+    usage; exit 1
+elif [ "${1}" = '-h' ] || [ "${1}" = '--help' ] ; then
+    usage; exit 0
 fi
 
 find "${@}" ! -empty -type f -exec md5sum {} + | sort | awk '
@@ -12,4 +17,3 @@ find "${@}" ! -empty -type f -exec md5sum {} + | sort | awk '
   else if (m==1)  { print l"\n"; m=0 } # previous hash matched, print previous line
   l=$0; h=$1                           # store line and hash
 }'
-

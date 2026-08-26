@@ -1,23 +1,31 @@
 #!/usr/bin/env sh
 
-usage(){
-    echo "Usage: $(basename "${0}") [-n LENGTH] [-u] [-l] [-d] [-s]"
-    echo 'Minimal password generator'
-    exit "${1}"
+usage() {
+    cat << EOF
+Usage: $(basename "${0}") [OPTS]
+Tiny password generator
+
+OPTIONS:
+   -n --lentgh N           generate a 
+   -u --upper              use upper characters
+   -l --lower              use lower characters
+   -d --digit              use digits
+   -s --special            use special characters
+   -h --help               show this help
+EOF
 }
+
 while [ -n "${1}" ]; do
     case "${1}" in
-        -n|--lentgh)   l="${2}"; shift;;
-        -u|--upper)    cx="${cx}A-Z";;
-        -l|--lower)    cx="${cx}a-z";;
-        -d|--digit)    cx="${cx}0-9";;
-        -s|--special)  cx="${cx}().,;:!@#$%+*/<>{}~_-";;
-        -h|--help)     usage 0;;
-        *)             echo "illegal option ${1}"; usage 1;;
+        -n|--lentgh)   l="${2}"; shift 2;;
+        -u|--upper)    cx="${cx}A-Z"; shift;;
+        -l|--lower)    cx="${cx}a-z"; shift;;
+        -d|--digit)    cx="${cx}0-9"; shift;;
+        -s|--special)  cx="${cx}().,;:!@#$%+*/<>{}~_-"; shift;;
+        -h|--help)     usage; exit 0;;
+        *)             echo "illegal option ${1}"; usage; exit 0;;
     esac
-    shift
 done
 
 # generate password
 </dev/urandom tr -dc "${cx:-A-Za-z0-9}" | head -c${l:-12}; echo;
-

@@ -1,17 +1,22 @@
 #!/usr/bin/env bash
 
+usage(){
+    echo "Usage: $(basename "${0}") URL"
+    echo 'Display http(s) status code from an url'
+}
+
 # check required package
 if ! command -v curl >/dev/null 2>&1; then
-    echo "Error: curl is required"
+    echo >&2 'Error: curl is required'
     exit 1
 fi
 
-if [ -z "${1}" ]; then
-    echo >&2 "Usage: $(basename "${0}") URL"
-    echo >&2 'Display http(s) status code from an url'
-    exit 1
+if [ ${#} -ne 1 ]; then
+    usage; exit 1
+elif [ "${1}" = '-h' ] || [ "${1}" = '--help' ] ; then
+    usage; exit 0
 fi
+
 useragent="User-Agent: Mozilla/5.0 (Macintosh; Intel Mac OS X 10_13_1) "
 useragent="${useragent}AppleWebKit/537.36 (K HTML, like Gecko) Chrome/61.0.3163.100 Safari/537.36"
 curl -skLo /dev/null -H "${useragent}" -w "%{http_code}\n" "${1}"
-

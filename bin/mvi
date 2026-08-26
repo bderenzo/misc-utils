@@ -1,50 +1,54 @@
-#!/usr/bin/env bash
-# Lists the current directory's files in Vim, so you can edit it and save to rename them
-# USAGE: vimv [file1 file2]
-# adapted from https://github.com/thameera/vimv
+#!/usr/bin/env sh
 set -eu
 
-FILENAMES_FILE=$(mktemp "${TMPDIR:-/tmp}/vimv.XXX")
+usage() {
+    echo "Usage: $(basename "${0}") FILE [FILE...]"
+    echo 'Bulk rename files using your favorite text editor'
+}
 
-trap '{ rm -f "${FILENAMES_FILE}" ; }' EXIT
+# Setup temporary files
+src_list=$(mktemp "${TMPDIR:-/tmp}/mvi_src.XXX")
+dst_list=$(mktemp "${TMPDIR:-/tmp}/mvi_dst.XXX")
+trap "rm -f '${src_list}' '${dst_list}'" EXIT
 
-if [ $# -ne 0 ]; then
-    src=( "$@" )
-else
-    IFS=$'\r\n' GLOBIGNORE='*' command eval 'src=($(ls))'
+if [ ${#} -eq 0 ]; then
+    # Default to all files/dirs in current path
+    set -- * .[!.]* ..?*
+elif [ "${1}" = '-h' ] || [ "${1}" = '--help' ] ; then
+    usage; exit 0
 fi
 
-for ((i=0;i<${#src[@]};++i)); do
-    echo "${src[i]}" >> "${FILENAMES_FILE}"
-done
+# Add requested files to list
+for f in "${@}"; do 
+    [ -e "${f}" ] && echo "${f}"
+done > "${src_list}"
 
-checksum1="$(md5sum "${FILENAMES_FILE}")"
-${EDITOR:-vi} "${FILENAMES_FILE}"
-checksum2="$(md5sum "${FILENAMES_FILE}")"
+cp "${src_list}" "${dst_list}"
+${EDITOR:-vi} "${dst_list}"
 
-if [[ "${checksum1}" == "${checksum2}" ]]; then
-    echo "nothing to do"
+if cmp -s "${src_list}" "${dst_list}"; then
+    echo "Nothing to do"
     exit 0
-fi
-
-IFS=$'\r\n' GLOBIGNORE='*' command eval 'dest=($(cat "${FILENAMES_FILE}"))'
-if [[ "${#src[@]}" != "${#dest[@]}" ]]; then
-    echo >&2 "error: source and destination number of files differs"
+elif ! wc -l "${src_list}" "${dst_list}" | awk 'NR==1{n=$1} NR==2{exit (n!=$1)}'; then
+    echo >&2 'Error: source and destination number of lines differs'
     exit 1
 fi
 
-declare -i count=0
-for ((i=0;i<${#src[@]};++i)); do
-    if [ "${src[i]}" != "${dest[i]}" ]; then
-        mkdir -p "$(dirname "${dest[i]}")"
-        echo "${src[i]} -> ${dest[i]}"
-        if git ls-files --error-unmatch "${src[i]}" > /dev/null 2>&1; then
-            git mv "${src[i]}" "${dest[i]}"
+count=0
+# Read both files at the same time and process renames line-by-line
+while read -r src <&3 && read -r dst <&4; do
+    if [ "${src}" != "${dst}" ]; then
+        mkdir -p "$(dirname "${dst}")"
+        echo "${src} -> ${dst}"
+        if [ -e "${dst}" ]; then
+            echo >&2 "Warning: Can't proceed, destination exists!"
+            continue
+        elif git ls-files --error-unmatch "${src}" >/dev/null 2>&1; then
+            git mv -- "${src}" "${dst}"
         else
-            mv "${src[i]}" "${dest[i]}"
+            mv -n -- "${src}" "${dst}"
         fi
-        ((++count))
+        count=$((count + 1))
     fi
-done
-
-echo "$count" files renamed.
+done 3<"${src_list}" 4<"${dst_list}"
+echo "${count} files renamed"

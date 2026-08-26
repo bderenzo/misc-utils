@@ -1,20 +1,25 @@
 #!/usr/bin/env sh
 
-if [ "$#" -lt '2' ]; then
-    echo >&2 "Usage: $(basename "${0}") DIR COMMAND"
-    echo >&2 "Execute a command when directory change"
-    exit 1
+usage(){
+    echo "Usage: $(basename "${0}") DIR COMMAND"
+    echo 'Execute a command when directory change'
+}
+
+if [ ${#} -lt 2 ]; then
+    usage; exit 1
+elif [ "${1}" = '-h' ] || [ "${1}" = '--help' ] ; then
+    usage; exit 0
 fi
 
 dir="${1}"
 shift
-h1="$(find "${dir}" -printf '%t' 2>/dev/null | md5sum)"
+st1="$(find "${dir}" -printf '%t' 2>/dev/null | md5sum)"
 while :; do
-    h2="$(find "${dir}" -printf '%t' 2>/dev/null | md5sum)"
-    if [ "${h1}" != "${h2}" ]; then
+    st2="$(find "${dir}" -printf '%t' 2>/dev/null | md5sum)"
+    if [ "${st1}" != "${st2}" ]; then
         date +"%Y/%m/%d %H:%M:%S:"
     	"${@}"
-    	h1="${h2}"
+        st1="${st2}"
     fi
     sleep 1
 done

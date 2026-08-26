@@ -1,20 +1,25 @@
 #!/usr/bin/env sh
 
+usage(){
+    echo "Usage: $(basename "${0}") FILE"
+    echo 'Convert a file into a base64 encoded url'
+}
+
 # check required package
 if ! command -v file 2>&1 >/dev/null; then
-    echo "Error: file command is required"
+    echo >&2 'Error: file command is required'
     exit 1
 fi
 
-if [ -z "${1}" ]; then
-    echo >&2 "Usage: $(basename "${0}") FILE"
-    echo >&2 'Convert a file into a base64 encoded url'
-    exit 1
+if [ ${#} -eq 0 ]; then
+    usage; exit 1
+elif [ "${1}" = '-h' ] || [ "${1}" = '--help' ] ; then
+    usage; exit 0
 fi
 
-mimeType=$(file -b --mime-type "${1}")
-if echo ${mimeType} | grep -q '^text/'; then
-    mimeType="${mimeType};charset=utf-8";
+mime_type=$(file --brief --mime-type "${1}")
+if echo "${mime_type}" | grep -q '^text/'; then
+    mime_type="${mime_type};charset=utf-8";
 fi
-echo "data:${mimeType};base64,$(base64 "${1}" | tr -d '\n')";
 
+echo "data:${mime_type};base64,$(base64 "${1}" | tr -d '\n')"

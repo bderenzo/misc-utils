@@ -1,27 +1,34 @@
 #!/usr/bin/env sh
 
+usage(){
+    echo "Usage: $(basename "${0}") ARCHIVE"
+    echo 'Tiny archive decompression wrapper'
+    echo 'Supported format: zip|7z|rar|gz|bz2|xz|lzma|tar|tar.gz|tar.bz2|tar.xz|Z|exe'
+}
+
+if [ ${#} -eq 0 ]; then
+    usage; exit 1
+elif [ "${1}" = '-h' ] || [ "${1}" = '--help' ] ; then
+    usage; exit 0
+fi
+
 archive="${1}"
-if [ -z "${1}" ]; then
-    echo >&2 "Usage: $(basename "${0}") ARCHIVE"
-    echo >&2 'Archive decompression utility'
-    echo >&2 'Supported format: zip|7z|rar|gz|bz2|xz|lzma|tar|tar.gz|tar.bz2|tar.xz|Z|exe'
-    exit 1
-elif ! [ -f "${archive}" ]; then
+if ! [ -f "${archive}" ]; then
     echo >&2 "'${archive}' file does not exist"
     exit 2
 fi
 
 # get archive name
 name="$(echo "${archive}" | sed -E 's,\.(zip|7z|rar|gz|bz2|xz|lzma|tar|tar.gz|tar.bz2|tar.xz|tgz|tbz2|txz|Z|exe)$,,')"
-if [ -e ${name} ]; then
+if [ -e "${name}" ]; then
     echo >&2 "'${name}' file or direcotry already exist"
     exit 3
 fi
 
-# extract in a subdirectory
-mkdir "${name}"
-cd "${name}" || exit 1
-mv ../"${archive}" .
+# always extract in a subdirectory
+mkdir -- "${name}"
+cd -- "${name}" || exit 1
+mv -- ../"${archive}" .
 case "${archive}" in
         *.tar)            tar -xvf     ./"${archive}" ;;
         *.tar.gz|*.tgz)   tar -xvzf    ./"${archive}" ;;
@@ -36,10 +43,11 @@ case "${archive}" in
         *.lzma)           unlzma       ./"${archive}" ;;
         *.Z)              uncompress   ./"${archive}" ;;
         *.exe)            cabextract   ./"${archive}" ;;
-        *)                echo >&2 "'${archive}' unknown archive method"; exit 1 ;;
+        *)                echo >&2 "'${archive}' unknown archive format"; exit 1 ;;
 esac
 rc=$?
 if [ "${rc}" -eq 0 ]; then
-    rm "${archive}"
+    rm -- "${archive}"
+    # TODO: if the archive already contain a directory remove it
 fi
 

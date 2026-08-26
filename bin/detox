@@ -1,25 +1,29 @@
 #!/usr/bin/env sh
 
-if [ -z "${1}" ]; then
-    echo >&2 "Usage: $(basename "${0}") [-n|--dry-run] FILE|DIR [FILE|DIR...]"
-    echo >&2 "Rename files and directories without special characters"
-    exit 1
-fi
+usage(){
+    echo "Usage: $(basename "${0}") [-n|--dry-run] FILE|DIR [FILE|DIR...]"
+    echo "Rename files and directories without special characters"
+}
 
 dry=false
-if [ "${1}" = '-n' ] || [ "${1}" = '--dry-run' ]; then
-    dry=true && shift
+if [ ${#} -eq 0 ]; then
+    usage; exit 1
+elif [ "${1}" = '-h' ] || [ "${1}" = '--help' ] ; then
+    usage; exit 0
+elif [ "${1}" = '-n' ] || [ "${1}" = '--dry-run' ]; then
+    dry=true
+    shift
 fi
 
 accent='çāáǎàēéěèêïîīíǐìôōóǒòûūúǔùǖǘǚǜĀÁǍÀĒÉĚÈĪÍǏÌŌÓǑÒŪÚǓÙǕǗǙǛ'
 normal='caaaaeeeeeiiiiiiooooouuuuuuuuuAAAAEEEEIIIIOOOOUUUUUUUU'
-for e in "$@"; do
-    b="$(basename "${e}")"
-    nb="$(echo "${b}" | sed -E -e 's/[^A-Za-z0-9]+$//' -e 's/[^A-Za-z0-9]+/./g' -e "y/${accent}/${normal}/")"
-    if [ "${b}" != "${nb}" ]; then
-        d="$(dirname "${e}")"
-        echo "${e} -> ${d}/${nb}"
-        ! ${dry} && mv "${e}" "${d}/${nb}"
+for e in "${@}"; do
+    cur="$(basename "${e}")"
+    new="$(echo "${cur}" | sed -E -e 's/[^A-Za-z0-9]+$//' -e 's/[^A-Za-z0-9]+/./g' -e "y/${accent}/${normal}/")"
+    if [ "${cur}" != "${new}" ]; then
+        dir="$(dirname "${e}")"
+        echo "${e} -> ${dir}/${new}"
+        ! ${dry} && mv -- "${e}" "${dir}/${new}"
     fi
-    unset nb
+    unset new
 done

@@ -1,0 +1,65 @@
+#!/usr/bin/env sh
+
+usage() {
+    cat << EOF
+Usage: $(basename "${0}") [--generate|--check|--delete] [PATH]
+Generate and verify directory checksums
+
+OPTIONS:
+   -c --check           verify checksums [default]
+   -g --generate        generate a new checksums file
+   -d --delete          remove generated checksums files
+   -h --help            show this help
+EOF
+}
+
+# check required package
+if ! command -v sha256sum >/dev/null 2>&1; then
+    echo >&2 'Error: sha256sum not found'
+    exit 1
+fi
+
+dir='.'
+action='check'
+hash_link='.checksums_latest.sha256'
+
+while [ ${#} -gt 0 ]; do
+    case "${1}" in
+        -g|--generate) action='generate'; shift;;
+        -c|--check)    action='check'; shift;;
+        -d|--delete)   action='delete'; shift;;
+        -h|--help)     usage; exit 0;;
+        *)             dir="${1}"; shift;;
+    esac
+done
+
+if [ ! -d "${dir}" ]; then
+    echo >&2 "Error: Directory '${dir}' does not exist"
+    exit 1
+fi
+
+cd "${dir}" || exit 1
+echo "Directory: $(pwd)"
+
+if [ "${action}" = 'generate' ]; then
+    hash_file=".checksums_$(date +'%Y%m%d_%H%M%S').sha256"
+    echo "Generate checksums..."
+    find . -type f ! -name ".checksums_*.sha256" -exec sha256sum {} + > "${hash_file}"
+    echo "Checksums file: ${hash_file}"
+    ln -snf "${hash_file}" "${hash_link}"
+elif [ "${action}" = 'delete' ]; then
+    echo "Remove checksums files..."
+    find . -maxdepth 1 -name ".checksums_*.sha256" -print -delete | cut -d'/' -f2-
+elif [ "${action}" = 'check' ]; then
+    if [ ! -f "${hash_link}" ]; then
+        echo >&2 "Error: ${hash_link} not found"
+        echo >&2 "Execute with --generate flag first"
+        exit 1
+    fi
+    echo "Checksums file: $(readlink "${hash_link}")"
+    echo "Verify checksums..."
+    if sha256sum -c "${hash_link}" 2>&1 | grep -v ': OK$'; then
+        exit 1
+    fi
+    echo 'OK'
+fi
