@@ -14,7 +14,7 @@ fi
 
 lockdir="/tmp/${1}.lock"
 if ! mkdir "${lockdir}" 2>/dev/null; then
-    echo 'error: lock '${1}' already acquired by another process' >&2
+    echo "Error: lock '${1}' already acquired by another process" >&2
     exit 1
 fi
 
