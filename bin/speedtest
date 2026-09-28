@@ -1,0 +1,57 @@
+#!/usr/bin/env sh
+
+dl_url='https://speed.cloudflare.com/__down?bytes=50000000'
+ul_url='https://speed.cloudflare.com/__up'
+n=3
+
+usage() {
+    cat << EOF
+Usage: ./$(basename "${0}") [OPTS]
+Minimal speed test
+
+OPTIONS:
+   -d --download-url URL   Download test URL [default: Cloudflare 50MB]
+   -u --upload-url URL     Upload test URL [default: Cloudflare]
+   -n --runs N             Number of runs [default: 3]
+   -h --help               Show this help
+EOF
+}
+
+for cmd in curl awk dd; do
+    if ! command -v "${cmd}" >/dev/null 2>&1; then
+        echo "Error: ${cmd} is required" >&2
+        exit 1
+    fi
+done
+
+while [ ${#} != 0 ] ; do
+    case "${1}" in
+        -h|--help)      usage; exit 0;;
+        -d|--dl-url)    dl_url="${2}"; shift;;
+        -u|--ul-url)    ul_url="${2}"; shift;;
+        -n|--run)       n="${2}"; shift;;
+        -*)             echo "unknown ${1} option"; usage >&2; exit 1;;
+        *)              break;;
+    esac
+    shift
+done
+
+measure() {
+    key="${1}"
+    url="${2}"
+    printf '%s' "${key}load" >&2
+    i=0
+    while [ "${i}" -lt "${n}" ]; do
+        printf '.' >&2
+        case "${key}" in
+            down)  curl -sfL -o /dev/null -w "%{speed_${key}load}\n" "${url}" || echo 0;;
+            up)    dd if=/dev/zero bs=5M count=1 2>/dev/null \
+                     | curl -sfL -X POST -o /dev/null -w "%{speed_${key}load}\n" --data-binary @- "${url}" || echo 0;;
+        esac
+        i=$((i + 1))
+    done | awk -v n="${n}" \
+       '{ t += $1 } END { a = t / n; printf "\n%.0f Mbit/s - %.1f MB/s\n", a * 8 / 1e6, a / 1e6 }'
+}
+
+measure 'down' "${dl_url}"
+measure 'up'   "${ul_url}"

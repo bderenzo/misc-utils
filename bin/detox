@@ -2,12 +2,12 @@
 
 usage(){
     echo "Usage: $(basename "${0}") [-n|--dry-run] FILE|DIR [FILE|DIR...]"
-    echo "Rename files and directories without special characters"
+    echo 'Rename files and directories without special characters'
 }
 
 dry=false
 if [ ${#} -eq 0 ]; then
-    usage; exit 1
+    usage >&2; exit 1
 elif [ "${1}" = '-h' ] || [ "${1}" = '--help' ] ; then
     usage; exit 0
 elif [ "${1}" = '-n' ] || [ "${1}" = '--dry-run' ]; then

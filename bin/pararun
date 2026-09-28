@@ -37,7 +37,7 @@ while [ ${#} != 0 ] ; do
         -d|--date)      date=true;;
         -q|--quiet)     quiet=true;;
         --)             shift; break;;
-        -*)             echo "unknown ${1} option"; usage; exit 1;;
+        -*)             echo "unknown ${1} option" >&2; usage >&2; exit 1;;
         *)              break;;
     esac
     shift

@@ -27,7 +27,7 @@ while [ ${#} -gt 0 ]; do
     case "${1}" in
         -o|--output)   fields="${2}"; shift 2;;
         -h|--help)     usage; exit 0;;
-        *)             echo >&2 "Unknown option: ${1}"; usage; exit 1;;
+        *)             echo "Unknown option: ${1}" >&2; usage >&2; exit 1;;
     esac
 done
 
@@ -36,8 +36,7 @@ $(ip route get 1.0.0.0 2>/dev/null)
 EOF
 
 if [ -z "${iface}" ]; then
-    echo >&2 'Error: Could not retrieve network data.'
-    exit 1
+    echo 'Error: Could not retrieve network data.' >&2; exit 1
 fi
 
 masklen=$(ip -o -f inet addr show dev "${iface}" | awk '/scope global/ {split($4,v,"/"); print v[2]; exit}')

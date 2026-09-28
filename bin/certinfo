@@ -7,12 +7,11 @@ usage(){
 
 # check required package
 if ! command -v openssl 2>&1 >/dev/null; then
-    echo >&2 'Error: openssl is required'
-    exit 1
+    echo 'Error: openssl is required' >&2; exit 1
 fi
 
 if [ ${#} -eq 0 ]; then
-    usage; exit 1
+    usage >&2; exit 1
 elif [ "${1}" = '-h' ] || [ "${1}" = '--help' ] ; then
     usage; exit 0
 fi

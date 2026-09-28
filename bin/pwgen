@@ -6,7 +6,7 @@ Usage: $(basename "${0}") [OPTS]
 Tiny password generator
 
 OPTIONS:
-   -n --lentgh N           generate a 
+   -n --lentgh N           generate a
    -u --upper              use upper characters
    -l --lower              use lower characters
    -d --digit              use digits

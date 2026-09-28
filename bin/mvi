@@ -19,7 +19,7 @@ elif [ "${1}" = '-h' ] || [ "${1}" = '--help' ] ; then
 fi
 
 # Add requested files to list
-for f in "${@}"; do 
+for f in "${@}"; do
     [ -e "${f}" ] && echo "${f}"
 done > "${src_list}"
 

@@ -1,0 +1,25 @@
+#!/usr/bin/env sh
+set -eu
+
+usage() {
+    echo "Usage: $(basename "${0}") LOCK -- COMMAND [ARGS...]"
+    echo 'Execute a command safely ensuring no concurrent execution'
+}
+
+if [ ${#} -lt 2 ]; then
+    usage >&2; exit 1
+elif [ "${1:-}" = '-h' ] || [ "${1:-}" = '--help' ]; then
+    usage; exit 0
+fi
+
+lockdir="/tmp/${1}.lock"
+if ! mkdir "${lockdir}" 2>/dev/null; then
+    echo 'error: lock '${1}' already acquired by another process' >&2
+    exit 1
+fi
+
+shift
+[ "x${1}" = 'x--' ] && shift
+
+trap 'rmdir "${lockdir}"' EXIT INT TERM
+"${@}"

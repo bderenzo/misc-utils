@@ -16,6 +16,7 @@ A collection of tiny portable shell script utilities.
 * `extract` - Archive decompression wrapper, support: zip, gz, bz2, xz, 7z, tar.gz, tar.bz2, tar.xz, rar, ...
 * `hgh` - Highlight words in a text
 * `httpstatus` - Display http(s) status code from an url
+* `lock` - Execute a command safely ensuring no concurrent execution
 * `math` - Tiny calculator
 * `monitor` - Execute a command when directory change
 * `mtailf` - Multiple grouped tailf
@@ -29,6 +30,8 @@ A collection of tiny portable shell script utilities.
 * `retry` - Retry a command until success
 * `serve` - Tiny http server
 * `signal` - Send signal to processes by name
+* `speedtest` - Tiny speedtest client
 * `sponge` - Tiny standard input soak and write utility
 * `stw` - Strip trailing whitespaces of files
+* `tm` - Quick attach or create tmux sessions
 

@@ -7,15 +7,14 @@ usage(){
 }
 
 if [ ${#} -eq 0 ]; then
-    usage; exit 1
+    usage >&2; exit 1
 elif [ "${1}" = '-h' ] || [ "${1}" = '--help' ] ; then
     usage; exit 0
 fi
 
 archive="${1}"
 if ! [ -f "${archive}" ]; then
-    echo >&2 "'${archive}' file does not exist"
-    exit 2
+    echo >&2 "'${archive}' file does not exist" >&2; exit 2
 fi
 
 # get archive name
