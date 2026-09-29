@@ -13,4 +13,4 @@ for bin in bin/*; do
     echo "+ ${bin##*/}"
     install -m 755 -o root "${bin}" "${local_bin_dir}/"
 done
-echo 'Done.'
+echo 'Done'

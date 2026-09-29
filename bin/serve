@@ -29,7 +29,7 @@ done
 
 # check required package
 if ! command -v python3 >/dev/null 2>&1; then
-    echo 'Error: python3 is required' >&2
+    echo "Error: command missing 'python3'" >&2
     exit 1
 fi
 

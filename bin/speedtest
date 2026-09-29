@@ -1,10 +1,6 @@
 #!/usr/bin/env sh
 set -eu
 
-dl_url='https://speed.cloudflare.com/__down?bytes=50000000'
-ul_url='https://speed.cloudflare.com/__up'
-n=3
-
 usage() {
     cat << EOF
 Usage: ${0##*/} [OPTS]
@@ -17,6 +13,10 @@ OPTIONS:
    -h --help               show this help
 EOF
 }
+
+dl_url='https://speed.cloudflare.com/__down?bytes=50000000'
+ul_url='https://speed.cloudflare.com/__up'
+n=3
 
 while [ ${#} -gt 0 ]; do
     case "${1}" in
@@ -31,14 +31,12 @@ while [ ${#} -gt 0 ]; do
 done
 
 if ! [ "${n}" -gt 0 ] 2>/dev/null; then
-    echo "Error: invalid number of runs '${n}'" >&2
-    exit 1
+    echo "Error: invalid number of runs '${n}'" >&2; exit 1
 fi
 
 for cmd in curl awk dd; do
     if ! command -v "${cmd}" >/dev/null 2>&1; then
-        echo "Error: missing command '${cmd}'" >&2
-        exit 1
+        echo "Error: missing command '${cmd}'" >&2; exit 1
     fi
 done
 

@@ -23,8 +23,7 @@ name="$(echo "${archive}" | sed -E 's,\.(zip|7z|rar|gz|bz2|xz|lzma|tar|tar.gz|ta
 if [ "${name}" = "${archive}" ]; then
     echo "Error: unknown archive format '${archive}'" >&2; exit 1
 elif [ -e "${name}" ]; then
-    echo "Error: '${name}' already exists" >&2
-    exit 1
+    echo "Error: extract directory '${name}' already exists" >&2; exit 1
 fi
 
 # always extract in a subdirectory

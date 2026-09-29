@@ -1,5 +1,6 @@
 #!/usr/bin/env sh
 set -eu
+# inspired from https://github.com/dharple/detox
 
 usage() {
     echo "Usage: ${0##*/} [-n|--dry-run] FILE|DIR [FILE|DIR ...]"
@@ -25,7 +26,7 @@ for e in "${@}"; do
         dir="$(dirname -- "${e}")"
         echo "${e} -> ${dir}/${new}"
         if [ -e "${dir}/${new}" ]; then
-            echo "Warning: Can't proceed, destination exists!" >&2
+            echo "Warning: can't proceed, destination exists!" >&2
         elif ! ${dry}; then
             mv -- "${e}" "${dir}/${new}"
         fi

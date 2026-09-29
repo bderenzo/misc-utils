@@ -12,9 +12,8 @@ elif [ "${1}" = '-h' ] || [ "${1}" = '--help' ]; then
     usage; exit 0
 fi
 
-# check required package
 if ! command -v file >/dev/null 2>&1; then
-    echo 'Error: file is required' >&2; exit 1
+    echo "Error: missing command 'file'" >&2; exit 1
 fi
 
 if [ ! -f "${1}" ]; then

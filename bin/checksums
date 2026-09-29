@@ -29,15 +29,12 @@ while [ ${#} -gt 0 ]; do
     esac
 done
 
-# check required package
 if ! command -v sha256sum >/dev/null 2>&1; then
-    echo 'Error: sha256sum is required' >&2
-    exit 1
+    echo "Error: missing command: 'sha256sum'" >&2; exit 1
 fi
 
 if [ ! -d "${dir}" ]; then
-    echo "Error: no such directory '${dir}'" >&2
-    exit 1
+    echo "Error: no such directory '${dir}'" >&2; exit 1
 fi
 
 cd "${dir}" || exit 1

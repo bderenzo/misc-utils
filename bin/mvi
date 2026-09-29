@@ -1,5 +1,6 @@
 #!/usr/bin/env sh
 set -eu
+# adpated from https://github.com/thameera/vimv
 
 usage() {
     echo "Usage: ${0##*/} FILE [FILE ...]"
@@ -29,11 +30,9 @@ cp "${src_list}" "${dst_list}"
 ${EDITOR:-vi} "${dst_list}"
 
 if cmp -s "${src_list}" "${dst_list}"; then
-    echo 'Nothing to do' >&2
-    exit 0
+    echo 'Nothing to do' >&2; exit 0
 elif [ "$(wc -l < "${src_list}")" -ne "$(wc -l < "${dst_list}")" ]; then
-    echo 'Error: source and destination number of lines differs' >&2
-    exit 1
+    echo 'Error: source and destination number of lines differs' >&2; exit 1
 fi
 
 count=0
@@ -43,7 +42,7 @@ while IFS= read -r src <&3 && IFS= read -r dst <&4; do
         mkdir -p -- "$(dirname -- "${dst}")"
         echo "${src} -> ${dst}"
         if [ -e "${dst}" ]; then
-            echo "Warning: Can't proceed, destination exists!" >&2
+            echo "Warning: can't proceed, destination exists!" >&2
             continue
         elif git ls-files --error-unmatch -- "${src}" >/dev/null 2>&1; then
             git mv -- "${src}" "${dst}"

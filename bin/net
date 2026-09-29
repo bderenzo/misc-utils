@@ -68,7 +68,7 @@ for field in ${fields}; do
         cidr)      out="${out}${masklen} ";;
         dns)       out="${out}${dns} ";;
         public)    out="${out}$(_public_ip) ";;
-        *)         echo "unknown ${field} field" >&2; usage >&2; exit 1;;
+        *)         echo "Error: unknown field '${field}'" >&2; exit 1;;
     esac
 done
 echo "${out% }"

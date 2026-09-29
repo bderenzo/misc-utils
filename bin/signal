@@ -21,8 +21,7 @@ fi
 procs=$(ps -A -o pid,args | grep -i "${1}" | grep -vE "grep|${0##*/}" || true)
 
 if [ -z "${procs}" ]; then
-    echo "No process found matching '${1}'" >&2
-    exit 0
+    echo "Error: no process found matching '${1}'" >&2; exit 0
 fi
 
 echo "${procs}"

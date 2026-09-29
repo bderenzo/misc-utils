@@ -6,6 +6,10 @@ usage() {
     echo 'Quick attach or create tmux sessions'
 }
 
+if ! command -v tmux >/dev/null 2>&1; then
+    echo "Error: missing command: 'tmux'" >&2; exit 1
+fi
+
 if [ "${1:-}" = '-h' ] || [ "${1:-}" = '--help' ]; then
     usage; exit 0
 elif [ -n "${1:-}" ]; then

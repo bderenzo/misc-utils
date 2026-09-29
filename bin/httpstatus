@@ -14,7 +14,7 @@ fi
 
 # check required package
 if ! command -v curl >/dev/null 2>&1; then
-    echo 'Error: curl is required' >&2; exit 1
+    echo "Error: missing command 'curl'" >&2; exit 1
 fi
 
 useragent='User-Agent: Mozilla/5.0 (Macintosh; Intel Mac OS X 10_13_1) '
