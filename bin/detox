@@ -1,14 +1,15 @@
 #!/usr/bin/env sh
+set -eu
 
-usage(){
-    echo "Usage: $(basename "${0}") [-n|--dry-run] FILE|DIR [FILE|DIR...]"
+usage() {
+    echo "Usage: ${0##*/} [-n|--dry-run] FILE|DIR [FILE|DIR ...]"
     echo 'Rename files and directories without special characters'
 }
 
 dry=false
 if [ ${#} -eq 0 ]; then
     usage >&2; exit 1
-elif [ "${1}" = '-h' ] || [ "${1}" = '--help' ] ; then
+elif [ "${1}" = '-h' ] || [ "${1}" = '--help' ]; then
     usage; exit 0
 elif [ "${1}" = '-n' ] || [ "${1}" = '--dry-run' ]; then
     dry=true
@@ -18,12 +19,15 @@ fi
 accent='çāáǎàēéěèêïîīíǐìôōóǒòûūúǔùǖǘǚǜĀÁǍÀĒÉĚÈĪÍǏÌŌÓǑÒŪÚǓÙǕǗǙǛ'
 normal='caaaaeeeeeiiiiiiooooouuuuuuuuuAAAAEEEEIIIIOOOOUUUUUUUU'
 for e in "${@}"; do
-    cur="$(basename "${e}")"
-    new="$(echo "${cur}" | sed -E -e 's/[^A-Za-z0-9]+$//' -e 's/[^A-Za-z0-9]+/./g' -e "y/${accent}/${normal}/")"
+    cur="$(basename -- "${e}")"
+    new="$(printf '%s\n' "${cur}" | sed -E -e 's/^[^.A-Za-z0-9]+//' -e 's/[^A-Za-z0-9]+$//' -e 's/[^A-Za-z0-9]+/./g' -e "y/${accent}/${normal}/")"
     if [ "${cur}" != "${new}" ]; then
-        dir="$(dirname "${e}")"
+        dir="$(dirname -- "${e}")"
         echo "${e} -> ${dir}/${new}"
-        ! ${dry} && mv -- "${e}" "${dir}/${new}"
+        if [ -e "${dir}/${new}" ]; then
+            echo "Warning: Can't proceed, destination exists!" >&2
+        elif ! ${dry}; then
+            mv -- "${e}" "${dir}/${new}"
+        fi
     fi
-    unset new
 done

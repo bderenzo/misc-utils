@@ -1,13 +1,14 @@
 #!/usr/bin/env sh
+set -eu
 
-usage(){
-    echo "Usage: $(basename "${0}") EXPR"
+usage() {
+    echo "Usage: ${0##*/} EXPR"
     echo 'Tiny calculator'
 }
 
 if [ ${#} -eq 0 ]; then
     usage >&2; exit 1
-elif [ "${1}" = '-h' ] || [ "${1}" = '--help' ] ; then
+elif [ "${1}" = '-h' ] || [ "${1}" = '--help' ]; then
     usage; exit 0
 fi
 
@@ -15,7 +16,7 @@ awk 'function cosd(x)   { return cos(x * atan2(0,-1) / 180) }
      function sind(x)   { return sin(x * atan2(0,-1) / 180) }
      function log10(x)  { return log(x) / log(10) }
      function abs(x)    { return (x < 0) ? -x : x }
-     function floor(x)  { return int(x) }
+     function floor(x)  { return (x < int(x)) ? int(x) - 1 : int(x) }
      function asin(x)   { return atan2(x, (1 - x^2)^0.5) }
      function acos(x)   { return atan2((1 - x^2)^0.5, x) }
      function atan(x)   { return atan2(x, 1) }

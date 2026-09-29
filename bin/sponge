@@ -2,19 +2,21 @@
 set -eu
 
 usage() {
-    echo "Usage: $(basename "${0}") FILE"
+    echo "Usage: ${0##*/} FILE"
     echo 'Soak up standard input and write to a file'
 }
 
-if [ ${#} -ne 1 ]; then
+if [ ${#} -eq 0 ]; then
     usage >&2; exit 1
-elif [ "${1}" = '-h' ] || [ "${1}" = '--help' ] ; then
+elif [ "${1}" = '-h' ] || [ "${1}" = '--help' ]; then
     usage; exit 0
 fi
 
 outfile="${1}"
-tmpfile=$(mktemp "${TMPDIR:-/tmp}/sponge.XXX")
-trap 'rm -f "${tmpfile}"' EXIT INT TERM
+tmpfile=$(mktemp "${TMPDIR:-/tmp}/sponge.XXXXXX")
+trap 'rm -f "${tmpfile}"' EXIT
+trap 'exit 130' INT
+trap 'exit 143' TERM
 
 cat > "${tmpfile}"
-mv "${tmpfile}" "${outfile}"
+cat "${tmpfile}" > "${outfile}"

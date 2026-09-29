@@ -1,9 +1,10 @@
 #!/usr/bin/env sh
+set -eu
 # adapted from https://news.ycombinator.com/item?id=30713151
 
 usage() {
     cat << EOF
-Usage: $(basename "${0}") [OPTS] -- COMMAND
+Usage: ${0##*/} [OPTS] -- COMMAND
 Retry a command until success
 
 OPTIONS:
@@ -22,31 +23,28 @@ attempt=1
 max_attempts=${ATTEMPTS-100}
 interval=${INTERVAL-5}
 backoff=false
-rc=0
 
-while :; do
+while [ ${#} -gt 0 ]; do
     case "${1}" in
         -a|--attempts) max_attempts=${2}; shift 2;;
         -i|--interval) interval=${2}; shift 2;;
         -b|--backoff)  backoff=true; shift;;
         -h|--help)     usage; exit 0;;
         --)            shift; break;;
+        -*)            echo "unknown ${1} option" >&2; usage >&2; exit 1;;
         *)             break;;
     esac
 done
 
-while :; do
-    "${@}"
+until "${@}"; do
     rc=${?}
-    [ ${rc} = 0 ] && exit ${rc}
-    echo "[${attempt}/${max_attempts}] Failure! (rc=${rc}) Retrying in ${interval}s" 1>&2
-    echo ''
-    if [ ${attempt} -lt ${max_attempts} ]; then
-        sleep ${interval}
-        attempt=$(( attempt + 1 ))
-        ${backoff} && interval=$(( interval * 30 / 20 ))
-    else
-        echo 'Last attempt reached' >&2
-        exit ${rc}
+    if [ "${attempt}" -ge "${max_attempts}" ]; then
+        echo "[${attempt}/${max_attempts}] Failure! (rc=${rc}) Last attempt reached" >&2
+        exit "${rc}"
     fi
+    echo "[${attempt}/${max_attempts}] Failure! (rc=${rc}) Retrying in ${interval}s" >&2
+    echo >&2
+    sleep "${interval}"
+    ${backoff} && interval=$(( (interval * 3 + 1) / 2 ))
+    attempt=$((attempt + 1))
 done

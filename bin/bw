@@ -1,32 +1,36 @@
 #!/usr/bin/env sh
+set -eu
 
-usage(){
-    echo "Usage: $(basename "${0}") [INTERFACE]"
-    echo 'Display bandwith (up and down) for an interface'
+usage() {
+    echo "Usage: ${0##*/} [INTERFACE]"
+    echo 'Display bandwidth (up and down) for an interface'
 }
 
-if [ "${1}" = '-h' ] || [ "${1}" = '--help' ] ; then
+if [ "${1:-}" = '-h' ] || [ "${1:-}" = '--help' ]; then
     usage; exit 0
 fi
 
-dev="${1}"
+dev="${1:-}"
 if [ -z "${dev}" ]; then
     # select default device
-    dev="$(ip route get 1.0.0.0 | awk '{print $5}')"
+    dev="$(ip route get 1.0.0.0 | awk '{for (i = 1; i < NF; i++) if ($i == "dev") print $(i + 1)}')"
 elif ! grep -q "^ *${dev}:" /proc/net/dev; then
-    echo >&2 "Error: device ${dev} not found"
-    echo 'Avalaible device(s):'
-    awk -F: '/:/ {gsub(/ /,""); print "+ "$1}' /proc/net/dev
-    exit 2
+    echo "Error: no such device '${dev}'" >&2
+    echo 'Available device(s):' >&2
+    awk -F: '/:/ {gsub(/ /,""); print "+ "$1}' /proc/net/dev >&2
+    exit 1
 fi
 
-echo -n "loading... "
-get_in_bytes(){  awk -v reg="^ *${1}:" '$1 ~ reg {print $2}'  /proc/net/dev; }
-get_out_bytes(){ awk -v reg="^ *${1}:" '$1 ~ reg {print $10}' /proc/net/dev; }
+printf 'loading... '
+get_bytes() {
+    while read -r name rx _ _ _ _ _ _ _ tx _; do
+        [ "${name}" = "${dev}:" ] && return
+    done < /proc/net/dev
+}
 
 while sleep 1; do
-    rx=$(get_in_bytes "${dev}") tx=$(get_out_bytes "${dev}")
-    awk "BEGIN { printf(\"\033[K\r${dev}: ↓ %.2f MiB/s | ↑ %.2f MiB/s | All %.2f MiB/s \", \
+    get_bytes
+    awk "BEGIN { printf(\"\r\033[K${dev}: ↓ %.2f MiB/s | ↑ %.2f MiB/s | All %.2f MiB/s \", \
         (${rx}-${rxo:-$rx})/1048576, \
         (${tx}-${txo:-$tx})/1048576, \
         (${tx}+${rx}-${txo:-$tx}-${rxo:-$rx})/1048576 ) }"

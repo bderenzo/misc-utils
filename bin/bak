@@ -1,26 +1,27 @@
 #!/usr/bin/env sh
+set -eu
 
-usage(){
-    echo "Usage: $(basename "${0}") FILE|DIR [FILE|DIR ...]"
-    echo "Create a backup of files or directories"
+usage() {
+    echo "Usage: ${0##*/} FILE|DIR [FILE|DIR ...]"
+    echo 'Create a backup of files or directories'
 }
 
 if [ ${#} -eq 0 ]; then
     usage >&2; exit 1
-elif [ "${1}" = '-h' ] || [ "${1}" = '--help' ] ; then
+elif [ "${1}" = '-h' ] || [ "${1}" = '--help' ]; then
     usage; exit 0
 fi
 
 rc=0
-bak="$(date +"%Y%m%d-%H%M%S")"
+bak="$(date +'%Y%m%d-%H%M%S')"
 for e in "${@}"; do
     e="${e%/}"
-    if [ -f "${e}" -o -d "${e}" ]; then
+    if [ -e "${e}" ]; then
         echo "+ ${e}"
-        cp -a "${e}" "${e}.${bak}~" || rc=$((rc + 1))
+        cp -a "${e}" "${e}.${bak}~" || rc=1
     else
-        echo >&2 "${e} no such file or directory"
-        rc="$((rc + 1))"
+        echo "Error: no such file or directory '${e}'" >&2
+        rc=1
     fi
 done
 

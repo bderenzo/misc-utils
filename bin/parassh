@@ -1,24 +1,29 @@
 #!/usr/bin/env sh
+set -eu
 
 usage() {
     cat << EOF
-Usage: ./$(basename "${0}") [OPTS] SERVER1 [SERVER2 ...] -- COMMAND
+Usage: ${0##*/} [OPTS] SERVER1 [SERVER2 ...] -- COMMAND
 Parallel SSH command execution
 
 OPTIONS:
-   -o --options SSH_OPTS   add ssh option(s)
+   -o --ssh-opts SSH_OPTS  add ssh option(s)
+   -e --no-stderr          hide ssh stderr (banners, warnings)
    -q --quiet              only print results
    -d --date               print date
    -h --help               show this help
 EOF
 }
 
-tmpdir="$(mktemp -d)"
 date=false
 quiet=false
-while [ $# != 0 ] ; do
+hosts=''
+sshopt=''
+stderr='/dev/stdout'
+while [ ${#} -gt 0 ]; do
     case "${1}" in
-        -o|--ssh-opt)   shift; sshopt="${sshopt} ${1}";;
+        -o|--ssh-opts)  shift; sshopt="${sshopt} ${1}";;
+        -e|--no-stderr) stderr='/dev/null';;
         -h|--help)      usage; exit 0;;
         -d|--date)      date=true;;
         -q|--quiet)     quiet=true;;
@@ -28,32 +33,24 @@ while [ $# != 0 ] ; do
     esac
     shift
 done
-[ -z "${hosts}" ] && usage 1
+[ -z "${hosts}" ] && { usage >&2; exit 1; }
+
+# cleanup on Ctrl+C
+trap 'kill 0; exit 130' INT
 
 n=0
 t0=$(date +%s)
 for h in ${hosts}; do
-    n=$((n+1))
-    ssh ${sshopt} ${h} -- "${@}" > "${tmpdir}/${n}_${h}_${t0}" 2>&1 &
-    state="${state} ${!};${h};${n}"
+    n=$((n + 1))
+    (
+        out=$(ssh ${sshopt} "${h}" -- "${@}" 2>"${stderr}") || :
+        ${date} && h="${h} $(date +'%Y/%m/%d @ %H:%M:%S')"
+        ${quiet} || out=$(printf '\033[1;31m%s\033[0m\n%s' "${h}" "${out}")
+        [ -n "${out}" ] && printf '%s\n' "${out}"
+    ) &
 done
-
-while [ "${state}" != '' ]; do
-    sleep 1
-    for s in ${state}; do
-        pid=$(echo $s | cut -d';' -f1)
-        if ! ps -o pid "${pid}" >/dev/null 2>&1; then
-            h=$(echo $s | cut -d';' -f2)
-            i=$(echo $s | cut -d';' -f3)
-            ${date} && d=" $(date +"%Y/%m/%d @ %H:%M:%S")"
-            ! ${quiet} && echo "${h}${d}" | grep '.*' --color=auto
-            cat ${tmpdir}/${i}_* && rm ${tmpdir}/${i}_*
-            state=$(echo "${state}" | sed "s, ${pid};${h};${i},,")
-        fi
-    done
-done
-rmdir ${tmpdir}
+wait
 if ! ${quiet}; then
-    echo
-    echo "Total: ${n} host(s), $(( $(date +%s) - t0 )) second(s)"
+    echo >&2
+    echo "Total: ${n} host(s), $(( $(date +%s) - t0 )) second(s)" >&2
 fi

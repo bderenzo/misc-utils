@@ -2,24 +2,26 @@
 set -eu
 
 usage() {
-    echo "Usage: $(basename "${0}") LOCK -- COMMAND [ARGS...]"
+    echo "Usage: ${0##*/} LOCK -- COMMAND [ARGS ...]"
     echo 'Execute a command safely ensuring no concurrent execution'
 }
 
-if [ ${#} -lt 2 ]; then
-    usage >&2; exit 1
-elif [ "${1:-}" = '-h' ] || [ "${1:-}" = '--help' ]; then
+if [ "${1:-}" = '-h' ] || [ "${1:-}" = '--help' ]; then
     usage; exit 0
+elif [ ${#} -lt 2 ]; then
+    usage >&2; exit 1
 fi
 
-lockdir="/tmp/${1}.lock"
+lockdir="${TMPDIR:-/tmp}/${1}.lock"
 if ! mkdir "${lockdir}" 2>/dev/null; then
     echo "Error: lock '${1}' already acquired by another process" >&2
     exit 1
 fi
 
 shift
-[ "x${1}" = 'x--' ] && shift
+[ "${1}" = '--' ] && shift
 
-trap 'rmdir "${lockdir}"' EXIT INT TERM
+trap 'rmdir "${lockdir}"' EXIT
+trap 'exit 130' INT
+trap 'exit 143' TERM
 "${@}"

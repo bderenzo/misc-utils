@@ -1,13 +1,14 @@
 #!/usr/bin/env sh
+set -eu
 
-usage(){
-    echo "Usage: $(basename "${0}") N"
+usage() {
+    echo "Usage: ${0##*/} N"
     echo 'Display Nth element of each line'
 }
 
 if [ ${#} -eq 0 ]; then
     usage >&2; exit 1
-elif [ "${1}" = '-h' ] || [ "${1}" = '--help' ] ; then
+elif [ "${1}" = '-h' ] || [ "${1}" = '--help' ]; then
     usage; exit 0
 fi
 

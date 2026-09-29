@@ -1,31 +1,36 @@
 #!/usr/bin/env sh
 set -eu
 
-# TODO: add -y to assume yes
-
 usage() {
-    echo "Usage: $(basename "${0}") PROCESS [SIGNAL]"
+    echo "Usage: ${0##*/} [-y|--yes] PROCESS [SIGNAL]"
     echo 'Send signal to processes by name'
 }
 
-if [ ${#} -ne 1 ]; then
+yes=false
+if [ "${1:-}" = '-y' ] || [ "${1:-}" = '--yes' ]; then
+    yes=true
+    shift
+fi
+
+if [ ${#} -eq 0 ]; then
     usage >&2; exit 1
-elif [ "${1:-}" = '-h' ] || [ "${1:-}" = '--help' ] ; then
+elif [ "${1}" = '-h' ] || [ "${1}" = '--help' ]; then
     usage; exit 0
 fi
 
-procs=$(ps -A -o pid,args | grep -i "${1:-}" | grep -vE "grep|${0##*/}" || true)
+procs=$(ps -A -o pid,args | grep -i "${1}" | grep -vE "grep|${0##*/}" || true)
 
 if [ -z "${procs}" ]; then
-    echo "No process found matching '${1}'"
+    echo "No process found matching '${1}'" >&2
     exit 0
 fi
 
 echo "${procs}"
-printf "\nSend SIG%s? [y/N] " "${2:-TERM}"
-read -r ans < /dev/tty
-
-if [ "${ans}" = "y" ] || [ "${ans}" = "Y" ]; then
-    echo "${procs}" | awk '{print $1}' | xargs kill -"${2:-TERM}"
-    echo "Signal sent"
+if ! ${yes}; then
+    printf '\nSend SIG%s? [y/N] ' "${2:-TERM}" >&2
+    read -r ans < /dev/tty
+    [ "${ans}" = 'y' ] || [ "${ans}" = 'Y' ] || exit 0
 fi
+
+echo "${procs}" | awk '{print $1}' | xargs kill -"${2:-TERM}"
+echo 'Signal sent' >&2

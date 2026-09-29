@@ -2,48 +2,50 @@
 set -eu
 
 usage() {
-    echo "Usage: $(basename "${0}") FILE [FILE...]"
+    echo "Usage: ${0##*/} FILE [FILE ...]"
     echo 'Bulk rename files using your favorite text editor'
 }
 
-# Setup temporary files
-src_list=$(mktemp "${TMPDIR:-/tmp}/mvi_src.XXX")
-dst_list=$(mktemp "${TMPDIR:-/tmp}/mvi_dst.XXX")
-trap "rm -f '${src_list}' '${dst_list}'" EXIT
+# setup temporary files
+src_list=$(mktemp "${TMPDIR:-/tmp}/mvi_src.XXXXXX")
+dst_list=$(mktemp "${TMPDIR:-/tmp}/mvi_dst.XXXXXX")
+trap 'rm -f "${src_list}" "${dst_list}"' EXIT
+trap 'exit 130' INT
+trap 'exit 143' TERM
 
 if [ ${#} -eq 0 ]; then
-    # Default to all files/dirs in current path
+    # default to all files/dirs in current path
     set -- * .[!.]* ..?*
-elif [ "${1}" = '-h' ] || [ "${1}" = '--help' ] ; then
+elif [ "${1}" = '-h' ] || [ "${1}" = '--help' ]; then
     usage; exit 0
 fi
 
-# Add requested files to list
+# add requested files to list
 for f in "${@}"; do
-    [ -e "${f}" ] && echo "${f}"
+    [ -e "${f}" ] && printf '%s\n' "${f}"
 done > "${src_list}"
 
 cp "${src_list}" "${dst_list}"
 ${EDITOR:-vi} "${dst_list}"
 
 if cmp -s "${src_list}" "${dst_list}"; then
-    echo "Nothing to do"
+    echo 'Nothing to do' >&2
     exit 0
-elif ! wc -l "${src_list}" "${dst_list}" | awk 'NR==1{n=$1} NR==2{exit (n!=$1)}'; then
-    echo >&2 'Error: source and destination number of lines differs'
+elif [ "$(wc -l < "${src_list}")" -ne "$(wc -l < "${dst_list}")" ]; then
+    echo 'Error: source and destination number of lines differs' >&2
     exit 1
 fi
 
 count=0
-# Read both files at the same time and process renames line-by-line
-while read -r src <&3 && read -r dst <&4; do
+# read both files at the same time and process renames line-by-line
+while IFS= read -r src <&3 && IFS= read -r dst <&4; do
     if [ "${src}" != "${dst}" ]; then
-        mkdir -p "$(dirname "${dst}")"
+        mkdir -p -- "$(dirname -- "${dst}")"
         echo "${src} -> ${dst}"
         if [ -e "${dst}" ]; then
-            echo >&2 "Warning: Can't proceed, destination exists!"
+            echo "Warning: Can't proceed, destination exists!" >&2
             continue
-        elif git ls-files --error-unmatch "${src}" >/dev/null 2>&1; then
+        elif git ls-files --error-unmatch -- "${src}" >/dev/null 2>&1; then
             git mv -- "${src}" "${dst}"
         else
             mv -n -- "${src}" "${dst}"
@@ -51,4 +53,4 @@ while read -r src <&3 && read -r dst <&4; do
         count=$((count + 1))
     fi
 done 3<"${src_list}" 4<"${dst_list}"
-echo "${count} files renamed"
+echo "${count} files renamed" >&2

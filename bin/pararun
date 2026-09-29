@@ -1,8 +1,9 @@
 #!/usr/bin/env sh
+set -eu
 
 usage() {
     cat << EOF
-Usage: ./$(basename "${0}") [OPTS] -- CMD1 [CMD2 ...]
+Usage: ${0##*/} [OPTS] -- CMD1 [CMD2 ...]
 Trace parallel command execution
 
 OPTIONS:
@@ -14,24 +15,24 @@ EOF
 
 # manage color list
 _color=30
-_color_inc(){ _color=$(( (_color % 38) + 1 + 30 * (_color == 38) )); }
+_color_inc() { _color=$(( (_color - 30) % 7 + 31 )); }
 
 _run() {
     _color_inc
-    ${quiet} || printf "execute: \033[%sm%s\033[0m\n" "${_color}" "${*}"
-    ${SHELL:-sh} -c "${@}" 2>&1 \
+    ${quiet} || printf 'execute: \033[%sm%s\033[0m\n' "${_color}" "${*}"
+    sh -c "${1}" 2>&1 \
       | while IFS= read -r line; do
           if ${date}; then
-              printf "%s \033[%sm%s\033[0m\n" "$(date +'%Y-%m-%d %H:%M:%S')" "${_color}" "${line}"
+              printf '%s \033[%sm%s\033[0m\n' "$(date +'%Y-%m-%d %H:%M:%S')" "${_color}" "${line}"
           else
-              printf "\033[%sm%s\033[0m\n" "${_color}" "${line}"
+              printf '\033[%sm%s\033[0m\n' "${_color}" "${line}"
           fi
       done &
 }
 
 date=false
 quiet=false
-while [ ${#} != 0 ] ; do
+while [ ${#} -gt 0 ]; do
     case "${1}" in
         -h|--help)      usage; exit 0;;
         -d|--date)      date=true;;
@@ -47,7 +48,7 @@ done
 trap 'kill 0; exit 130' INT
 
 # exec all commands
-while [ ${#} != 0 ] ; do
+while [ ${#} -gt 0 ]; do
     _run "${1}"
     shift
 done

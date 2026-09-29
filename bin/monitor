@@ -1,14 +1,15 @@
 #!/usr/bin/env sh
+set -eu
 
-usage(){
-    echo "Usage: $(basename "${0}") DIR COMMAND"
+usage() {
+    echo "Usage: ${0##*/} DIR COMMAND"
     echo 'Execute a command when directory change'
 }
 
-if [ ${#} -lt 2 ]; then
-    usage >&2; exit 1
-elif [ "${1}" = '-h' ] || [ "${1}" = '--help' ] ; then
+if [ "${1:-}" = '-h' ] || [ "${1:-}" = '--help' ]; then
     usage; exit 0
+elif [ ${#} -lt 2 ]; then
+    usage >&2; exit 1
 fi
 
 dir="${1}"
@@ -17,10 +18,9 @@ st1="$(find "${dir}" -printf '%t' 2>/dev/null | md5sum)"
 while :; do
     st2="$(find "${dir}" -printf '%t' 2>/dev/null | md5sum)"
     if [ "${st1}" != "${st2}" ]; then
-        date +"%Y/%m/%d %H:%M:%S:"
-    	"${@}"
+        date +'%Y/%m/%d %H:%M:%S:'
+        "${@}" || :
         st1="${st2}"
     fi
     sleep 1
 done
-

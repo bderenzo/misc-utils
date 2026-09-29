@@ -1,16 +1,16 @@
 #!/usr/bin/env sh
 
 if [ "$(id -u)" != '0' ]; then
-    echo >&2 'Only root can do that'
+    echo 'Only root can do that' >&2
     exit 1
 fi
 
-LOCAL_BIN_DIR='/usr/local/bin'
+local_bin_dir='/usr/local/bin'
 
-echo "Install..."
+echo 'Install...'
+cd "$(dirname "${0}")" || exit 1
 for bin in bin/*; do
-    echo "+ $(basename "${bin}")"
-    install -m 755 -o root "${bin}" "${LOCAL_BIN_DIR}/"
+    echo "+ ${bin##*/}"
+    install -m 755 -o root "${bin}" "${local_bin_dir}/"
 done
-echo "Done."
-
+echo 'Done.'

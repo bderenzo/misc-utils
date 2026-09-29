@@ -1,12 +1,13 @@
 #!/usr/bin/env sh
+set -eu
 
 usage() {
     cat << EOF
-Usage: $(basename "${0}") [OPTS]
+Usage: ${0##*/} [OPTS]
 Tiny password generator
 
 OPTIONS:
-   -n --lentgh N           generate a
+   -n --length N           password length [default: 12]
    -u --upper              use upper characters
    -l --lower              use lower characters
    -d --digit              use digits
@@ -15,17 +16,19 @@ OPTIONS:
 EOF
 }
 
-while [ -n "${1}" ]; do
+cx='' sp=''
+while [ ${#} -gt 0 ]; do
     case "${1}" in
-        -n|--lentgh)   l="${2}"; shift 2;;
+        -n|--length)   l="${2}"; shift 2;;
         -u|--upper)    cx="${cx}A-Z"; shift;;
         -l|--lower)    cx="${cx}a-z"; shift;;
         -d|--digit)    cx="${cx}0-9"; shift;;
-        -s|--special)  cx="${cx}().,;:!@#$%+*/<>{}~_-"; shift;;
+        -s|--special)  sp='().,;:!@#$%+*/<>{}~_-'; shift;;
         -h|--help)     usage; exit 0;;
-        *)             echo "illegal option ${1}"; usage; exit 0;;
+        *)             echo "unknown ${1} option" >&2; usage >&2; exit 1;;
     esac
 done
 
 # generate password
+cx="${cx}${sp}"
 </dev/urandom tr -dc "${cx:-A-Za-z0-9}" | head -c${l:-12}; echo;

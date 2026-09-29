@@ -1,13 +1,14 @@
 #!/usr/bin/env sh
+set -eu
 
-usage(){
-    echo "Usage: $(basename "${0}") [COLOR] PATTERN"
+usage() {
+    echo "Usage: ${0##*/} [COLOR] PATTERN"
     echo 'Highlight words in a text'
 }
 
 if [ ${#} -eq 0 ]; then
     usage >&2; exit 1
-elif [ "${1}" = '-h' ] || [ "${1}" = '--help' ] ; then
+elif [ "${1}" = '-h' ] || [ "${1}" = '--help' ]; then
     usage; exit 0
 fi
 
@@ -16,17 +17,17 @@ if [ ${#} -lt 2 ]; then
     match="${1}"
 else
     case "${1}" in
-	black)   color=30;;
-	red)     color=31;;
-	green)   color=32;;
-	yellow)  color=33;;
-	blue)    color=34;;
-	magenta) color=35;;
-	cyan)    color=36;;
+        black)   color=30;;
+        red)     color=31;;
+        green)   color=32;;
+        yellow)  color=33;;
+        blue)    color=34;;
+        magenta) color=35;;
+        cyan)    color=36;;
+        *)       echo "unknown ${1} color" >&2; usage >&2; exit 1;;
     esac
     match="${2}"
 fi
-fg_c=$(echo "\e[1;${color}m")
-c_rs=$(echo "\e[0m")
-sed "s/${match}/${fg_c}\0${c_rs}/g"
-
+fg_c=$(printf '\033[1;%sm' "${color}")
+c_rs=$(printf '\033[0m')
+sed "s/${match}/${fg_c}&${c_rs}/g"

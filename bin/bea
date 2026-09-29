@@ -1,25 +1,27 @@
 #!/usr/bin/env sh
+set -eu
 
-usage(){
-    echo "Usage: (compress) $(basename "${0}") FILE [FILE ...]"
-    echo "     (uncompress) $(basename "${0}") -d"
+usage() {
+    echo "Usage: (compress) ${0##*/} FILE [FILE ...]"
+    echo "     (uncompress) ${0##*/} -d"
+    echo "       (commands) ${0##*/} -p"
     echo 'Generate base64 encoded archive for copy and paste data'
 }
 
 if [ ${#} -eq 0 ]; then
     usage >&2; exit 1
-elif [ "${1}" = '-h' ] || [ "${1}" = '--help' ] ; then
+elif [ "${1}" = '-h' ] || [ "${1}" = '--help' ]; then
     usage; exit 0
 elif [ "${1}" = '-p' ]; then
     echo '  compress: tar -czf - . | base64'
     echo 'uncompress: base64 -d | tar -xz'
 elif [ "${1}" = '-d' ]; then
-    echo 'Paste 64bits encoded data, then press CTRL+D twice'
-    echo
+    echo 'Paste base64 encoded data, then press CTRL+D twice' >&2
+    echo >&2
     base64 -d | tar -xz
-    echo
+    echo >&2
 else
-    echo "Copy 64bits encoded data below, to extract execute: $(basename "${0}") -d"
-    echo
+    echo "Copy base64 encoded data below, to extract execute: ${0##*/} -d" >&2
+    echo >&2
     tar -czf - "${@}" | base64
 fi

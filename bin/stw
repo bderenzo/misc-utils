@@ -1,24 +1,29 @@
 #!/usr/bin/env sh
+set -eu
 
-usage(){
-    echo "Usage: $(basename "${0}") FILE [FILE...]"
+usage() {
+    echo "Usage: ${0##*/} FILE [FILE ...]"
     echo 'Strip trailing whitespaces of files'
 }
 
 if [ ${#} -eq 0 ]; then
     usage >&2; exit 1
-elif [ "${1}" = '-h' ] || [ "${1}" = '--help' ] ; then
+elif [ "${1}" = '-h' ] || [ "${1}" = '--help' ]; then
     usage; exit 0
 fi
 
+rc=0
 for e in "${@}"; do
-    if ! [ -f "${e}" ]; then
-        echo >&2 "Error: no such file '${e}'"
+    if [ ! -f "${e}" ]; then
+        echo "Error: no such file '${e}'" >&2
+        rc=1
         continue
     fi
     echo "+ ${e}"
     # print
-    awk '/ +$/ {print $0"."}' "${e}"
+    awk '/[[:space:]]+$/ {print $0"."}' "${e}"
     # replace
-    sed -e 's,\s\s*$,,' -i "${e}"
+    sed -e 's,[[:space:]]*$,,' -i "${e}"
 done
+
+exit "${rc}"

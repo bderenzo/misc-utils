@@ -2,18 +2,17 @@
 set -eu
 
 usage() {
-    echo "Usage: $(basename "${0}") [NAME]"
+    echo "Usage: ${0##*/} [NAME]"
     echo 'Quick attach or create tmux sessions'
 }
 
 if [ "${1:-}" = '-h' ] || [ "${1:-}" = '--help' ]; then
     usage; exit 0
 elif [ -n "${1:-}" ]; then
-    echo "Create or attach to session: ${1}"
-    tmux attach-session -t "${1}" 2>/dev/null \
-      || tmux new-session -s "${1}"
-    echo
-    echo "Sessions list:"
+    echo "Create or attach to session: ${1}" >&2
+    tmux new-session -A -s "${1}"
+    echo >&2
+    echo 'Sessions list:' >&2
 fi
 
-tmux ls 2>/dev/null || echo 'No running session...'
+tmux ls 2>/dev/null || echo 'No running session...' >&2

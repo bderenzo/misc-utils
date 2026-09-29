@@ -1,19 +1,19 @@
 #!/usr/bin/env sh
+set -eu
 
-usage(){
-    echo "Usage: $(basename "${0}") DIR [DIR ...]"
+usage() {
+    echo "Usage: ${0##*/} DIR [DIR ...]"
     echo 'Find duplicate files in directories'
 }
 
 if [ ${#} -eq 0 ]; then
     usage >&2; exit 1
-elif [ "${1}" = '-h' ] || [ "${1}" = '--help' ] ; then
+elif [ "${1}" = '-h' ] || [ "${1}" = '--help' ]; then
     usage; exit 0
 fi
 
 find "${@}" ! -empty -type f -exec md5sum {} + | sort | awk '
-{
-  if      (h==$1) { print l;     m=1 } # current  hash match,   print previous line
-  else if (m==1)  { print l"\n"; m=0 } # previous hash matched, print previous line
-  l=$0; h=$1                           # store line and hash
-}'
+$1 == h { if (!m) print l; print; m=1; next } # hash match, print previous line once then current
+m       { print "" }                          # end of a duplicate group, print separator
+        { l=$0; h=$1; m=0 }                   # store line and hash
+'

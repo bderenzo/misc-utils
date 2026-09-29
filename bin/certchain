@@ -1,36 +1,35 @@
 #!/usr/bin/env sh
+set -eu
 
-usage(){
-    echo "Usage: $(basename "${0}") CHAINFILE"
-    echo 'Display basic certificate information from a certifcate bundle'
+usage() {
+    echo "Usage: ${0##*/} CHAINFILE"
+    echo 'Display basic certificate information from a certificate bundle'
 }
-
-# check required package
-if ! command -v openssl 2>&1 >/dev/null; then
-    echo 'Error: openssl is required' >&2; exit 1
-fi
 
 if [ ${#} -eq 0 ]; then
     usage >&2; exit 1
-elif [ "${1}" = '-h' ] || [ "${1}" = '--help' ] ; then
+elif [ "${1}" = '-h' ] || [ "${1}" = '--help' ]; then
     usage; exit 0
 fi
 
-chain="${1}"
-if ! [ -f "${chain}" ]; then
-    echo >&2 "Error: no such file '${chain}'"
-    exit 2
+# check required package
+if ! command -v openssl >/dev/null 2>&1; then
+    echo 'Error: openssl is required' >&2; exit 1
 fi
 
-awk 'BEGIN {i=0;} /BEGIN CERTIFICATE/ {i++;} i { print > "/tmp/cert_"i".pem" }' "${chain}"
-first=true
-for f in /tmp/cert_*.pem; do
-    ${first} && first=false || echo '-'
-    openssl x509 -in ${f} -issuer -subject -enddate -fingerprint -noout -ext subjectAltName 2>/dev/null \
-      | sed -e '/^X509v3 Subject Alternative Name/d' \
-            -e 's/^notAfter/expire/' \
-            -e 's/^SHA1 Fingerprint/sha1/' \
-            -e 's/^\s\s*/alt=/' \
-            -e 's/=/\t/'
-    rm "${f}"
-done
+chain="${1}"
+if [ ! -f "${chain}" ]; then
+    echo "Error: no such file '${chain}'" >&2
+    exit 1
+fi
+
+awk -v cmd='openssl x509 -issuer -subject -enddate -fingerprint -noout -ext subjectAltName 2>/dev/null' '
+    /BEGIN CERTIFICATE/ { if (n++) { print "-"; fflush() }; c=1 }
+    c                   { print | cmd }
+    /END CERTIFICATE/   { close(cmd); c=0 }
+' "${chain}" \
+  | sed -e '/^X509v3 Subject Alternative Name/d' \
+        -e 's/^notAfter/expire/' \
+        -e 's/^SHA1 Fingerprint/sha1/' \
+        -e 's/^[[:space:]][[:space:]]*/alt=/' \
+        -e 's/=/\t/'

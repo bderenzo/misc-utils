@@ -1,23 +1,18 @@
 #!/usr/bin/env sh
+set -eu
 
 usage() {
     cat << EOF
-Usage: $(basename "${0}") [--generate|--check|--delete] [PATH]
+Usage: ${0##*/} [OPTS] [PATH]
 Generate and verify directory checksums
 
 OPTIONS:
-   -c --check           verify checksums [default]
-   -g --generate        generate a new checksums file
-   -d --delete          remove generated checksums files
-   -h --help            show this help
+   -c --check              verify checksums [default]
+   -g --generate           generate a new checksums file
+   -d --delete             remove generated checksums files
+   -h --help               show this help
 EOF
 }
-
-# check required package
-if ! command -v sha256sum >/dev/null 2>&1; then
-    echo >&2 'Error: sha256sum not found'
-    exit 1
-fi
 
 dir='.'
 action='check'
@@ -29,35 +24,42 @@ while [ ${#} -gt 0 ]; do
         -c|--check)    action='check'; shift;;
         -d|--delete)   action='delete'; shift;;
         -h|--help)     usage; exit 0;;
+        -*)            echo "unknown ${1} option" >&2; usage >&2; exit 1;;
         *)             dir="${1}"; shift;;
     esac
 done
 
+# check required package
+if ! command -v sha256sum >/dev/null 2>&1; then
+    echo 'Error: sha256sum is required' >&2
+    exit 1
+fi
+
 if [ ! -d "${dir}" ]; then
-    echo >&2 "Error: Directory '${dir}' does not exist"
+    echo "Error: no such directory '${dir}'" >&2
     exit 1
 fi
 
 cd "${dir}" || exit 1
-echo "Directory: $(pwd)"
+echo "Directory: ${PWD}" >&2
 
 if [ "${action}" = 'generate' ]; then
     hash_file=".checksums_$(date +'%Y%m%d_%H%M%S').sha256"
-    echo "Generate checksums..."
-    find . -type f ! -name ".checksums_*.sha256" -exec sha256sum {} + > "${hash_file}"
-    echo "Checksums file: ${hash_file}"
+    echo 'Generate checksums...' >&2
+    find . -type f ! -name '.checksums_*.sha256' -exec sha256sum {} + > "${hash_file}"
+    echo "Checksums file: ${hash_file}" >&2
     ln -snf "${hash_file}" "${hash_link}"
 elif [ "${action}" = 'delete' ]; then
-    echo "Remove checksums files..."
-    find . -maxdepth 1 -name ".checksums_*.sha256" -print -delete | cut -d'/' -f2-
+    echo 'Remove checksums files...' >&2
+    find . -maxdepth 1 -name '.checksums_*.sha256' -print -delete | cut -d'/' -f2-
 elif [ "${action}" = 'check' ]; then
     if [ ! -f "${hash_link}" ]; then
-        echo >&2 "Error: ${hash_link} not found"
-        echo >&2 "Execute with --generate flag first"
+        echo "Error: no such file '${hash_link}'" >&2
+        echo 'Execute with --generate flag first' >&2
         exit 1
     fi
-    echo "Checksums file: $(readlink "${hash_link}")"
-    echo "Verify checksums..."
+    echo "Checksums file: $(readlink "${hash_link}")" >&2
+    echo 'Verify checksums...' >&2
     if sha256sum -c "${hash_link}" 2>&1 | grep -v ': OK$'; then
         exit 1
     fi

@@ -2,26 +2,24 @@
 set -eu
 
 usage() {
-    echo "Usage: $(basename "${0}") [OPTIONS] [FILE...]"
+    echo "Usage: ${0##*/} [FILE ...]"
     echo 'Strip terminal control sequences from text'
 }
 
-if [ ${#} -eq 0 ]; then
-    usage >&2; exit 1
 if [ "${1:-}" = '-h' ] || [ "${1:-}" = '--help' ]; then
     usage; exit 0
 fi
 
-ESC=$(printf '\033')
-CR=$(printf '\r')
-NL='
+esc=$(printf '\033')
+cr=$(printf '\r')
+nl='
 '
 
 sed -E "
-s/${CR}/\\${NL}/g;
-s/(\\\\r)/\\${NL}/g;
-s/(${ESC}\[(H|2J|3J|K))+/\\${NL}/g;
-s/((\\\x1b|\\033|\\\\e)\[(H|2J|3J|K))+/\\${NL}/g;
-s/${ESC}\[[0-9;?]*[[:alpha:]]//g;
+s/${cr}/\\${nl}/g;
+s/(\\\\r)/\\${nl}/g;
+s/(${esc}\[(H|2J|3J|K))+/\\${nl}/g;
+s/((\\\x1b|\\033|\\\\e)\[(H|2J|3J|K))+/\\${nl}/g;
+s/${esc}\[[0-9;?]*[[:alpha:]]//g;
 s/(\\\x1b|\\033|\\\\e)\[[0-9;?]*[[:alpha:]]//g;
 " "${@}"

@@ -1,39 +1,37 @@
 #!/usr/bin/env bash
+set -eu
 
-usage(){
-    echo "Usage: $(basename "${0}") FILE [FILE ...]"
-    echo 'Mutliple grouped tailf'
+usage() {
+    echo "Usage: ${0##*/} FILE [FILE ...]"
+    echo 'Multiple grouped tailf'
 }
 
 if [ ${#} -eq 0 ]; then
     usage >&2; exit 1
-elif [ "${1}" = '-h' ] || [ "${1}" = '--help' ] ; then
+elif [ "${1}" = '-h' ] || [ "${1}" = '--help' ]; then
     usage; exit 0
 fi
 
-# print with a fixed width
-_p(){ printf "%*.*s" "-${1}" "${1}" "${2}"; }
-
 # kill on signal
-trap 'kill $(jobs -p) &> /dev/null' SIGHUP SIGINT SIGTERM
+trap 'kill $(jobs -p) >/dev/null 2>&1' HUP INT TERM
 
 # get longest filename
 maxlen=0
 for file in "${@}"; do
-    len="$(basename "${file}" | wc -c)"
-    (( len > maxlen )) && maxlen="${len}"
+    name="${file##*/}"
+    (( ${#name} > maxlen )) && maxlen="${#name}"
 done
 
-# tailling files
+# tailing files
 for file in "${@}"; do
-    if ! [ -f "${file}" ]; then
-        echo >&2 "Error: no such file '${file}'"
+    if [ ! -f "${file}" ]; then
+        echo "Error: no such file '${file}'" >&2
         continue
     fi
-    echo "reading ${file}"
-    filename="$(basename "${file}")"
-    tail -n 0 -f "${file}" 2>/dev/null | while read -r line; do
-        echo "$(_p "${maxlen}" "${filename}")| "${line}""
+    echo "reading ${file}" >&2
+    filename="${file##*/}"
+    tail -n 0 -f "${file}" 2>/dev/null | while IFS= read -r line; do
+        printf '%-*s | %s\n' "${maxlen}" "${filename}" "${line}"
     done &
 done
 wait

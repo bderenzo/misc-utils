@@ -1,4 +1,5 @@
 #!/usr/bin/env sh
+set -eu
 
 dl_url='https://speed.cloudflare.com/__down?bytes=50000000'
 ul_url='https://speed.cloudflare.com/__up'
@@ -6,34 +7,39 @@ n=3
 
 usage() {
     cat << EOF
-Usage: ./$(basename "${0}") [OPTS]
-Minimal speed test
+Usage: ${0##*/} [OPTS]
+Tiny speedtest client
 
 OPTIONS:
-   -d --download-url URL   Download test URL [default: Cloudflare 50MB]
-   -u --upload-url URL     Upload test URL [default: Cloudflare]
-   -n --runs N             Number of runs [default: 3]
-   -h --help               Show this help
+   -d --download-url URL   download test URL [default: Cloudflare 50MB]
+   -u --upload-url URL     upload test URL [default: Cloudflare]
+   -n --runs N             number of runs [default: 3]
+   -h --help               show this help
 EOF
 }
 
-for cmd in curl awk dd; do
-    if ! command -v "${cmd}" >/dev/null 2>&1; then
-        echo "Error: ${cmd} is required" >&2
-        exit 1
-    fi
-done
-
-while [ ${#} != 0 ] ; do
+while [ ${#} -gt 0 ]; do
     case "${1}" in
-        -h|--help)      usage; exit 0;;
-        -d|--dl-url)    dl_url="${2}"; shift;;
-        -u|--ul-url)    ul_url="${2}"; shift;;
-        -n|--run)       n="${2}"; shift;;
-        -*)             echo "unknown ${1} option"; usage >&2; exit 1;;
-        *)              break;;
+        -h|--help)         usage; exit 0;;
+        -d|--download-url) dl_url="${2}"; shift;;
+        -u|--upload-url)   ul_url="${2}"; shift;;
+        -n|--runs)         n="${2}"; shift;;
+        -*)                echo "unknown ${1} option" >&2; usage >&2; exit 1;;
+        *)                 break;;
     esac
     shift
+done
+
+if ! [ "${n}" -gt 0 ] 2>/dev/null; then
+    echo "Error: invalid number of runs '${n}'" >&2
+    exit 1
+fi
+
+for cmd in curl awk dd; do
+    if ! command -v "${cmd}" >/dev/null 2>&1; then
+        echo "Error: missing command '${cmd}'" >&2
+        exit 1
+    fi
 done
 
 measure() {
@@ -50,7 +56,7 @@ measure() {
         esac
         i=$((i + 1))
     done | awk -v n="${n}" \
-       '{ t += $1 } END { a = t / n; printf "\n%.0f Mbit/s - %.1f MB/s\n", a * 8 / 1e6, a / 1e6 }'
+       '{ t += $1 } END { a = t / n; printf "\n%.0f Mbit/s - %.1f MiB/s\n", a * 8 / 1e6, a / 1048576 }'
 }
 
 measure 'down' "${dl_url}"

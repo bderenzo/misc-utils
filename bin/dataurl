@@ -1,24 +1,29 @@
 #!/usr/bin/env sh
+set -eu
 
-usage(){
-    echo "Usage: $(basename "${0}") FILE"
+usage() {
+    echo "Usage: ${0##*/} FILE"
     echo 'Convert a file into a base64 encoded url'
 }
 
-# check required package
-if ! command -v file 2>&1 >/dev/null; then
-    echo 'Error: file command is required' >&2; exit 1
-fi
-
 if [ ${#} -eq 0 ]; then
     usage >&2; exit 1
-elif [ "${1}" = '-h' ] || [ "${1}" = '--help' ] ; then
+elif [ "${1}" = '-h' ] || [ "${1}" = '--help' ]; then
     usage; exit 0
 fi
 
-mime_type=$(file --brief --mime-type "${1}")
-if echo "${mime_type}" | grep -q '^text/'; then
-    mime_type="${mime_type};charset=utf-8";
+# check required package
+if ! command -v file >/dev/null 2>&1; then
+    echo 'Error: file is required' >&2; exit 1
 fi
+
+if [ ! -f "${1}" ]; then
+    echo "Error: no such file '${1}'" >&2; exit 1
+fi
+
+mime_type=$(file --brief --mime-type "${1}")
+case "${mime_type}" in
+    text/*) mime_type="${mime_type};charset=utf-8";;
+esac
 
 echo "data:${mime_type};base64,$(base64 "${1}" | tr -d '\n')"
